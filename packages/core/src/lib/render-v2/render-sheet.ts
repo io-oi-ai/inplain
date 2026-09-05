@@ -20,7 +20,7 @@ import {
   renderTopNav,
   renderFooterAndWatermark,
   wrapHtml,
-  NAV_ACTION_SCRIPT,
+  navActionScript,
 } from "./chrome";
 import { VISUAL_EDIT_SCRIPT } from "@/lib/export/visual-edit-script";
 import { SHEET_CHART_INTERACTIVE } from "./sheet-chart-interactive";
@@ -218,8 +218,8 @@ export function renderSheet(opts: SheetRenderOptions): string {
     actions:
       opts.actions ??
       [
-        { label: "分享链接", intent: "share" },
-        { label: "导出 .xlsx", intent: "export-xlsx", primary: true },
+        { label: "Share link", intent: "share" },
+        { label: "Export .xlsx", intent: "export-xlsx", primary: true },
       ],
     branded,
   });
@@ -258,7 +258,7 @@ export function renderSheet(opts: SheetRenderOptions): string {
     themeCss: compiled.css,
     bodyHtml: `${nav}${switcherBar}${grouped.join("\n")}${sqlStateScript}${sqlRuntime}${footer}${askFab}`,
     extraHead: `<style>${BASE_ELEMENTS_CSS}${SHEET_CSS}${V24C_CSS}${SHEET_TABLE_CSS}${PARAM_SWITCHER_CSS}${DOC_ASK_CSS}</style>`,
-    extraScripts: NAV_ACTION_SCRIPT + VISUAL_EDIT_SCRIPT + `<script>${SHEET_CHART_INTERACTIVE}</script>` + `<script>${SHEET_TABLE_INTERACTIVE}</script>` + (switchers.length > 0 ? `<script>${PARAM_SWITCHER_INTERACTIVE}</script>` : "") + (showQa ? (guestQa ? qaShareIdScript(opts.qaShareId!) : "") + `<script>${DOC_ASK_SCRIPT}</script>` : ""),
+    extraScripts: navActionScript() + VISUAL_EDIT_SCRIPT + `<script>${SHEET_CHART_INTERACTIVE}</script>` + `<script>${SHEET_TABLE_INTERACTIVE}</script>` + (switchers.length > 0 ? `<script>${PARAM_SWITCHER_INTERACTIVE}</script>` : "") + (showQa ? (guestQa ? qaShareIdScript(opts.qaShareId!) : "") + `<script>${DOC_ASK_SCRIPT}</script>` : ""),
   });
 }
 

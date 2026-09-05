@@ -33,7 +33,7 @@ export const THEME_TOGGLE_SCRIPT = `
     .plain-theme-toggle { display: none !important; }
   }
 </style>
-<button class="plain-theme-toggle" aria-label="切换主题" title="切换明暗主题"></button>
+<button class="plain-theme-toggle" aria-label="Toggle theme" title="Toggle light / dark"></button>
 <script>
 (function() {
   var KEY = 'plain.theme';

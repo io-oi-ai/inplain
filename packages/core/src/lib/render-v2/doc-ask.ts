@@ -10,7 +10,9 @@
  */
 
 /** gateway 绝对地址 · 导出 HTML 在任意域打开都能回 Plain 后端 */
-const ASK_ENDPOINT = "https://inplain.app/api/ask-doc";
+// 文档问答要一个后端。开源版默认没有 —— 设了 PLAIN_ASK_ENDPOINT 才渲染入口。
+const ASK_ENDPOINT =
+  (typeof process !== "undefined" ? process.env?.PLAIN_ASK_ENDPOINT : undefined) ?? "";
 
 export const DOC_ASK_CSS = `
 .plain-ask-fab { position: fixed; right: 22px; bottom: 22px; z-index: 200; display: flex; align-items: center; gap: 8px; padding: 11px 16px; border-radius: 999px; border: 0; background: var(--plain-ink, #1f1f22); color: var(--plain-bg, #fff); font: 600 13px/1 system-ui, sans-serif; cursor: pointer; box-shadow: 0 6px 24px rgba(0,0,0,.22); transition: box-shadow .15s; }
@@ -52,17 +54,19 @@ export function qaShareIdScript(shareId: string): string {
 
 /** kind 决定按钮文案 + 上下文抽取方式 · deck/doc/sheet 各异 */
 export function renderAskFab(kind: "deck" | "doc" | "sheet" = "doc"): string {
+  // 没有后端就别渲染入口 —— 一个点了必然失败的按钮比没有按钮更糟。
+  if (!ASK_ENDPOINT) return "";
   const label =
-    kind === "deck" ? "问这个演示" : kind === "sheet" ? "问这个表格" : "问这篇文档";
+    kind === "deck" ? "Ask this deck" : kind === "sheet" ? "Ask this sheet" : "Ask this doc";
   return `<button class="plain-ask-fab" data-ask-open data-ask-kind="${kind}" type="button" aria-label="${label}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     ${label}
   </button>
   <div class="plain-ask-panel" data-ask-panel>
-    <div class="plain-ask-head"><strong>${label}</strong><button class="plain-ask-close" data-ask-close type="button" aria-label="关闭">×</button></div>
+    <div class="plain-ask-head"><strong>${label}</strong><button class="plain-ask-close" data-ask-close type="button" aria-label="Close">×</button></div>
     <div class="plain-ask-log" data-ask-log><div class="plain-ask-empty">基于本内容回答你的问题</div></div>
     <form class="plain-ask-form" data-ask-form>
-      <input type="text" placeholder="例:这里讲了什么?" data-ask-input autocomplete="off" />
+      <input type="text" placeholder="e.g. What does this cover?" data-ask-input autocomplete="off" />
       <button type="submit" data-ask-send>问</button>
     </form>
   </div>`;
@@ -153,7 +157,7 @@ export const DOC_ASK_SCRIPT = `
       }
     }).catch(function(){
       thinking.className = 'plain-ask-msg a err';
-      thinking.textContent = '连接失败 — 需要联网且登录 Plain 才能使用文档问答。';
+      thinking.textContent = 'Could not reach the answer service. This feature needs a hosted Plain account.';
     }).then(function(){ send.disabled = false; input.focus(); });
   });
 })();

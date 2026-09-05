@@ -49,16 +49,20 @@ plain mcp              # or run it in the foreground to debug
 ```
 
 Tools: `generate_artifact`, `edit_artifact`, `export`, plus per-form variants
-and offline Office exporters. `generate_artifact` publishes the result and
-returns a shareable URL alongside the source.
+and Office exporters (see the caveat below). `generate_artifact` publishes the
+result and returns a shareable URL alongside the source.
 
 **As a CLI** — scriptable, pipes cleanly:
 
 ```bash
 plain generate "Q3 board update" --as deck -o out.html
-plain export out.md --to pptx
 plain deck edit out.md --patch '[{"op":"replace","path":"/slides/0/title","value":"Q3"}]'
+plain export out.md --to html
 ```
+
+Office export (`--to pptx|docx|xlsx`) currently only handles the older
+Marp-style source (`marp: true` frontmatter), not the v2 format `generate`
+produces. Web-native HTML is the supported path for everything.
 
 **As a library** — the rendering pipeline is a plain dependency:
 

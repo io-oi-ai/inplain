@@ -408,7 +408,7 @@ function renderPanelTable(d: SectionData, csvData: ParsedCsv | null): string {
   if (!interactive) return tableHtml;
   // 包 wrap:搜索框 + 表格 + 分页条(脚本在 hydrate 时填充)
   return `<div class="plain-table-wrap">
-    ${searchable ? `<div class="table-search"><input type="text" placeholder="搜索…" data-table-search></div>` : ""}
+    ${searchable ? `<div class="table-search"><input type="text" placeholder="Search…" data-table-search></div>` : ""}
     ${tableHtml}
     ${pageSize > 0 ? `<div class="table-pager" data-table-pager hidden></div>` : ""}
   </div>`;

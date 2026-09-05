@@ -55,8 +55,8 @@ export function renderSheetV3(opts: SheetV3RenderOptions): string {
       kind: "sheet",
       breadcrumb,
       actions: opts.actions ?? [
-        { label: "分享链接", intent: "share" },
-        { label: "导出 .xlsx", intent: "export-xlsx", primary: true },
+        { label: "Share link", intent: "share" },
+        { label: "Export .xlsx", intent: "export-xlsx", primary: true },
       ],
       branded,
     });

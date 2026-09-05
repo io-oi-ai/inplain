@@ -138,9 +138,9 @@ export function renderCodeBlock(text: string, info: string): string {
       ? `<div class="code-head">
           ${title ? `<span class="code-title">${escapeHtml(title)}</span>` : `<span class="code-lang">${escapeHtml(langLabel)}</span>`}
           ${title && langLabel ? `<span class="code-lang">${escapeHtml(langLabel)}</span>` : ""}
-          <button class="code-copy" type="button" aria-label="复制代码" data-copy>复制</button>
+          <button class="code-copy" type="button" aria-label="Copy code" data-copy>复制</button>
         </div>`
-      : `<button class="code-copy code-copy-float" type="button" aria-label="复制代码" data-copy>复制</button>`;
+      : `<button class="code-copy code-copy-float" type="button" aria-label="Copy code" data-copy>复制</button>`;
 
   return `<figure class="plain-code-block${title || langLabel ? " has-head" : ""}" data-lang="${escapeAttr(lang)}">
     ${head}
@@ -192,7 +192,7 @@ export const CODE_BLOCK_SCRIPT = `
     var code = fig && fig.querySelector('code');
     if (!code) return;
     var text = code.innerText;
-    var done = function(){ var o=btn.textContent; btn.textContent='已复制'; btn.classList.add('copied'); setTimeout(function(){ btn.textContent=o; btn.classList.remove('copied'); }, 1400); };
+    var done = function(){ var o=btn.textContent; btn.textContent='Copied'; btn.classList.add('copied'); setTimeout(function(){ btn.textContent=o; btn.classList.remove('copied'); }, 1400); };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(done, function(){});
     } else {

@@ -22,7 +22,7 @@ import {
   wrapHtml,
   escapeHtml,
   PRESENT_TOGGLE_SCRIPT,
-  NAV_ACTION_SCRIPT,
+  navActionScript,
   MERMAID_HYDRATE_SCRIPT,
 } from "./chrome";
 import { VISUAL_EDIT_SCRIPT } from "@/lib/export/visual-edit-script";
@@ -113,8 +113,8 @@ export function renderDeck(opts: DeckRenderOptions): string {
         actions:
           opts.actions ??
           [
-            { label: "分享链接", intent: "share" },
-            { label: "导出 .pptx", intent: "export-pptx", primary: true },
+            { label: "Share link", intent: "share" },
+            { label: "Export .pptx", intent: "export-pptx", primary: true },
           ],
         branded,
       });
@@ -141,7 +141,7 @@ export function renderDeck(opts: DeckRenderOptions): string {
     bodyHtml: `${nav}${sectionsOut.join("\n")}${footer}${askFab}`,
     socialCard: isSocial ? "portrait" : null,
     extraHead: `<style>${BASE_ELEMENTS_CSS}</style><style>${DECK_CSS}</style><style>${DOC_ASK_CSS}</style>`,
-    extraScripts: PRESENT_TOGGLE_SCRIPT + NAV_ACTION_SCRIPT + VISUAL_EDIT_SCRIPT + MERMAID_HYDRATE_SCRIPT + (showQa ? (guestQa ? qaShareIdScript(opts.qaShareId!) : "") + `<script>${DOC_ASK_SCRIPT}</script>` : ""),
+    extraScripts: PRESENT_TOGGLE_SCRIPT + navActionScript() + VISUAL_EDIT_SCRIPT + MERMAID_HYDRATE_SCRIPT + (showQa ? (guestQa ? qaShareIdScript(opts.qaShareId!) : "") + `<script>${DOC_ASK_SCRIPT}</script>` : ""),
   });
 }
 

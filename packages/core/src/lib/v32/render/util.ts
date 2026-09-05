@@ -236,7 +236,7 @@ export const STAGE_SCALER_JS = `
     if (mode === 'scroll') {
       viewport.classList.add('scroll-mode');
       slides.forEach((s) => s.classList.add('active')); // 全部可见
-      if (btn) btn.textContent = '⊞ 幻灯片';
+      if (btn) btn.textContent = '⊞ Slides';
       fitScroll();
       // 滚到当前页
       var cur = slides[idx];
@@ -244,7 +244,7 @@ export const STAGE_SCALER_JS = `
     } else {
       viewport.classList.remove('scroll-mode');
       slides.forEach((s) => { s.style.transform = ''; s.style.marginBottom = ''; s.style.marginRight = ''; });
-      if (btn) btn.textContent = '☰ 滚动';
+      if (btn) btn.textContent = '☰ Scroll';
       fitDeck();
       show(idx);
     }

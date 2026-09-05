@@ -136,7 +136,7 @@ export const SHEET_TABLE_SCRIPT = `<script>
   if (!wrap) return;
   const filterBar = document.createElement('div');
   filterBar.className = 'sheet-filter-bar';
-  filterBar.innerHTML = '<input type="search" placeholder="筛选(支持多关键词,空格分隔)" class="sheet-filter-input" />';
+  filterBar.innerHTML = '<input type="search" placeholder="Filter (space-separated keywords)" class="sheet-filter-input" />';
   wrap.insertBefore(filterBar, table);
 
   const input = filterBar.querySelector('.sheet-filter-input');

@@ -23,7 +23,7 @@ import {
   escapeAttr,
   SCROLL_PROGRESS_CSS,
   SCROLL_PROGRESS_SCRIPT,
-  NAV_ACTION_SCRIPT,
+  navActionScript,
   MERMAID_HYDRATE_SCRIPT,
 } from "./chrome";
 import { VISUAL_EDIT_SCRIPT } from "@/lib/export/visual-edit-script";
@@ -121,8 +121,8 @@ export function renderDoc(opts: DocRenderOptions): string {
         actions:
           opts.actions ??
           [
-            { label: "分享链接", intent: "share" },
-            { label: "导出 .docx", intent: "export-docx", primary: true },
+            { label: "Share link", intent: "share" },
+            { label: "Export .docx", intent: "export-docx", primary: true },
           ],
         branded,
       });
@@ -167,7 +167,7 @@ ${askFab}`;
   font-size: 10px;
 }
 </style>`,
-    extraScripts: SCROLL_PROGRESS_SCRIPT + tocActiveScript() + NAV_ACTION_SCRIPT + VISUAL_EDIT_SCRIPT + MERMAID_HYDRATE_SCRIPT + `<script>${CODE_BLOCK_SCRIPT}</script>` + (showQa ? (guestQa ? qaShareIdScript(opts.qaShareId!) : "") + `<script>${DOC_ASK_SCRIPT}</script>` : ""),
+    extraScripts: SCROLL_PROGRESS_SCRIPT + tocActiveScript() + navActionScript() + VISUAL_EDIT_SCRIPT + MERMAID_HYDRATE_SCRIPT + `<script>${CODE_BLOCK_SCRIPT}</script>` + (showQa ? (guestQa ? qaShareIdScript(opts.qaShareId!) : "") + `<script>${DOC_ASK_SCRIPT}</script>` : ""),
   });
 }
 

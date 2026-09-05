@@ -84,7 +84,11 @@ export function renderTopNav(opts: ChromeOptions): string {
  */
 export function renderFooterAndWatermark(opts: ChromeOptions): string {
   if (!opts.branded) return "";
-  return `<a class="plain-watermark" href="https://inplain.app" target="_blank" rel="noopener" title="用 Plain 制作">
+  // 开源/自托管默认不打水印 —— 产物是使用者的,不该带别人的品牌和外链。
+  // 托管版通过 PLAIN_BRAND_URL 开启(见 docs);未设则整块不渲染。
+  const brandUrl = typeof process !== "undefined" ? process.env?.PLAIN_BRAND_URL : undefined;
+  if (!brandUrl) return "";
+  return `<a class="plain-watermark" href="${brandUrl}" target="_blank" rel="noopener" title="Made with Plain">
     <span class="plain-watermark-kicker">made with</span>
     <span class="plain-watermark-brand">Plain<span class="plain-dot">.</span></span>
   </a>`;
@@ -312,7 +316,15 @@ body[data-plain-mode="present"] section.plain-section {
  *    跳回 https://inplain.app(让 user 在 Plain 重新操作)。
  *    这样桌面那份独立 .html 也不会出现「按钮失效」的体验。
  */
-export const NAV_ACTION_SCRIPT = `
+export function navActionScript(): string {
+  // 独立打开的产物里,那些"分享 / 导出"按钮需要一个后端才能工作。
+  // 托管版把它们改写成跳回自己的工作台;开源自托管没有那个工作台,
+  // 与其留一堆点了跳到别人网站的按钮,不如直接移除。
+  const brandUrl = typeof process !== "undefined" ? process.env?.PLAIN_BRAND_URL : undefined;
+  const openInPlain = brandUrl
+    ? `a.href = ${JSON.stringify(brandUrl + "/app")}; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Open in Plain'; btn.replaceWith(a);`
+    : "btn.remove();";
+  return `
 <script>
 (function() {
   var isStandalone = (function() {
@@ -321,21 +333,11 @@ export const NAV_ACTION_SCRIPT = `
   })();
 
   if (isStandalone) {
-    // 改写所有带 intent 的 button → 跳回 inplain.app(用户回 Plain 操作)
+    // 没有宿主可以处理这些动作 —— 按配置决定:改写成外链(托管版)或移除(自托管)。
     document.querySelectorAll('[data-plain-intent]').forEach(function(btn) {
-      var intent = btn.dataset.plainIntent;
       var a = document.createElement('a');
       a.className = btn.className;
-      a.href = 'https://inplain.app/app';
-      a.target = '_blank';
-      a.rel = 'noopener';
-      // 把"分享链接 / 导出 .pptx"等改成统一一句"用 Plain 打开"
-      if (intent === 'share' || intent.indexOf('export-') === 0) {
-        a.textContent = '用 Plain 打开';
-      } else {
-        a.textContent = btn.textContent;
-      }
-      btn.replaceWith(a);
+      ${openInPlain}
     });
     return;
   }
@@ -352,8 +354,9 @@ export const NAV_ACTION_SCRIPT = `
   });
 })();
 </script>`;
+}
 
-/** 演示模式切换的 inline script(仅 deck 用,跟 NAV_ACTION_SCRIPT 并存) */
+/** 演示模式切换的 inline script(仅 deck 用,跟 navActionScript 并存) */
 export const PRESENT_TOGGLE_SCRIPT = `
 <style>
 /* V19 · Speaker notes 浮窗(演讲模式 only) */

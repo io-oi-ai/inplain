@@ -199,9 +199,9 @@ ${ctx.fonts}
     ${slidesHtml}
     ${chrome}
   </div>
-  <button class="deck-nav deck-nav-prev" aria-label="上一页" type="button">‹</button>
-  <button class="deck-nav deck-nav-next" aria-label="下一页" type="button">›</button>
-  <button class="deck-mode-toggle" aria-label="切换浏览模式" type="button" title="幻灯片 / 长页滚动">☰ 滚动</button>
+  <button class="deck-nav deck-nav-prev" aria-label="Previous" type="button">‹</button>
+  <button class="deck-nav deck-nav-next" aria-label="Next" type="button">›</button>
+  <button class="deck-mode-toggle" aria-label="Toggle view mode" type="button" title="Slides / scroll">☰ 滚动</button>
 </div>
 <script>${STAGE_SCALER_JS}</script>
 ${ctx.editScript}
