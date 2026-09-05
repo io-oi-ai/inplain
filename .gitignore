@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.audit/
+build-meta.json
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example

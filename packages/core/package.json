@@ -1,0 +1,22 @@
+{
+  "name": "@inplain/core",
+  "version": "0.5.0",
+  "description": "Plain's artifact engine — document model, renderers, and Office export. Pure functions: no IO, no network.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/io-oi-ai/inplain.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/io-oi-ai/inplain",
+  "main": "./src/core/index.ts",
+  "types": "./src/core/index.ts",
+  "exports": {
+    ".": "./src/core/index.ts",
+    "./lib/*": "./src/lib/*"
+  },
+  "files": ["src", "LICENSE"],
+  "publishConfig": {
+    "access": "public"
+  }
+}

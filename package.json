@@ -1,0 +1,35 @@
+{
+  "name": "inplain-monorepo",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm --filter @inplain/cli build",
+    "typecheck": "tsc --noEmit",
+    "core:smoke": "tsx scripts/core-smoke.mjs",
+    "cli:smoke": "tsx scripts/cli-smoke.mjs",
+    "plain": "tsx packages/cli/src/index.ts"
+  },
+  "devDependencies": {
+    "@ai-sdk/anthropic": "^3.0.71",
+    "@ai-sdk/deepseek": "^2.0.29",
+    "@ai-sdk/google": "^3.0.64",
+    "@ai-sdk/openai": "^3.0.53",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@types/node": "^24.10.1",
+    "ai": "^6.0.168",
+    "commander": "^14.0.3",
+    "docx": "^9.6.1",
+    "echarts": "^6.0.0",
+    "esbuild": "^0.25.12",
+    "fast-json-patch": "^3.1.1",
+    "marked": "^18.0.2",
+    "nanoid": "^5.1.9",
+    "ollama-ai-provider-v2": "^3.5.0",
+    "pptxgenjs": "^4.0.1",
+    "tsx": "^4.20.7",
+    "typescript": "^5.9.3",
+    "xlsx": "^0.18.5",
+    "zod": "^4.3.6"
+  },
+  "packageManager": "pnpm@10.25.0"
+}
