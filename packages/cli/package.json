@@ -1,6 +1,6 @@
 {
   "name": "@inplain/cli",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Plain — AI-native Office. Generate, edit, and export decks, docs, and sheets from your terminal. Includes an MCP server (plain mcp) for Claude Code / Cursor / any MCP-aware agent.",
   "keywords": [
     "plain",

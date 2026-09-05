@@ -11,6 +11,12 @@
 import type { PlainTheme } from "@/lib/theme-v2/theme-schema";
 import { MERMAID_SCRIPT, MERMAID_CSS } from "@/lib/render-theme/mermaid";
 
+
+/** 产物 <html lang>。默认 en;PLAIN_LANG 可覆盖(不影响内容语言,只是标记)。 */
+function htmlLang(): string {
+  return (typeof process !== "undefined" ? process.env?.PLAIN_LANG : undefined) || "en";
+}
+
 export type ChromeOptions = {
   /** 文档类型:控制 actions / 演示模式按钮 */
   kind: "deck" | "doc" | "sheet";
@@ -539,7 +545,7 @@ export function wrapHtml(opts: {
   const kindAttr = opts.kind ? ` data-plain-kind="${escapeAttr(opts.kind)}"` : "";
   const socialAttr = opts.socialCard ? ` data-plain-social="${escapeAttr(opts.socialCard)}"` : "";
   return `<!doctype html>
-<html lang="zh-CN" data-plain-theme="${escapeAttr(opts.themeId)}"${kindAttr}${socialAttr}>
+<html lang="${htmlLang()}" data-plain-theme="${escapeAttr(opts.themeId)}"${kindAttr}${socialAttr}>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />

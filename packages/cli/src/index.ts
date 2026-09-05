@@ -29,6 +29,10 @@ import { registerInstall } from "./commands/install";
 import { registerGenerate } from "./commands/generate";
 import { registerDesign } from "./commands/design";
 
+// build.mjs 用 esbuild define 把 package.json 的 version 注进来 —— 单一来源,
+// 避免这里再硬编码一份然后漂移。tsx 直跑源码时没有 define,回落到 "dev"。
+const PKG_VERSION = process.env.PLAIN_CLI_VERSION ?? "dev";
+
 // boot:把保存的 config 提升到 env,后续 setupLlmEnv() 自动选 backend
 applyConfigToEnv();
 
@@ -39,7 +43,7 @@ program
   .description(
     "Plain — the artifact layer for AI work. Generate, edit, and share living artifacts (deck / doc / dashboard).",
   )
-  .version("0.5.0")
+  .version(PKG_VERSION)
   .option("--json", "Emit machine-readable JSON on stdout (progress still on stderr)")
   .hook("preAction", (thisCmd) => {
     if (thisCmd.opts().json) setOutputMode("json");

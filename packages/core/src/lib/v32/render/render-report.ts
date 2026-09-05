@@ -90,6 +90,12 @@ function renderBlock(block: Block, baseCtx: Omit<RenderCtx, "pathPrefix" | "rend
   return fn(block, ctx);
 }
 
+
+/** 产物 <html lang>。默认 en;PLAIN_LANG 可覆盖(不影响内容语言,只是标记)。 */
+function htmlLang(): string {
+  return (typeof process !== "undefined" ? process.env?.PLAIN_LANG : undefined) || "en";
+}
+
 export function renderReport(
   doc: Document,
   template?: TemplateV32,
@@ -139,7 +145,7 @@ function renderReportMode(
   const body = doc.blocks.map((b) => renderBlock(b, ctx.baseCtx, ctx.template)).join("\n");
   const pageHtml = `<main class="doc-page"><article class="doc-article v32-flow">${body}</article></main>`;
   return `<!DOCTYPE html>
-<html lang="zh-CN" data-plain-template="${escapeHtml(ctx.slug)}" data-plain-kind="report" data-v32-mode="report">
+<html lang="${htmlLang()}" data-plain-template="${escapeHtml(ctx.slug)}" data-plain-kind="report" data-v32-mode="report">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -181,7 +187,7 @@ function renderPresent(
   const chrome = `<div class="pagenum" aria-hidden="true">01 / ${String(slides.length).padStart(2, "0")}</div>${ctx.template?.presentChrome ?? ""}`;
 
   return `<!DOCTYPE html>
-<html lang="zh-CN" data-plain-template="${escapeHtml(ctx.slug)}" data-plain-kind="present" data-v32-mode="present">
+<html lang="${htmlLang()}" data-plain-template="${escapeHtml(ctx.slug)}" data-plain-kind="present" data-v32-mode="present">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />

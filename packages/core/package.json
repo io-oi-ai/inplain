@@ -1,6 +1,6 @@
 {
   "name": "@inplain/core",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Plain's artifact engine — document model, renderers, and Office export. Pure functions: no IO, no network.",
   "license": "MIT",
   "repository": {
@@ -15,7 +15,10 @@
     ".": "./src/core/index.ts",
     "./lib/*": "./src/lib/*"
   },
-  "files": ["src", "LICENSE"],
+  "files": [
+    "src",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public"
   }
