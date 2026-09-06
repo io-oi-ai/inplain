@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" data-plain-template="biennale-yellow" data-plain-kind="report" data-v32-mode="report">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A Case for Surgical Edits: JSON Patch over Regeneration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html {
+  /* 长页滚动质感(零依赖):锚点平滑跳转 + iOS 惯性 + 边界回弹收敛 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-padding-top: 24px;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html, body { margin: 0; padding: 0; background: var(--doc-page-bg, var(--slide-bg, #fff)); color: var(--doc-text, #1a1a1a); }
+body { min-height: 100vh; }
+.doc-page { width: 100%; min-height: 100vh; padding: 80px 24px 120px; box-sizing: border-box; }
+.doc-article { max-width: 720px; margin: 0 auto; }
+.doc-article > * + * { margin-top: 24px; }
+@media print {
+  html, body { background: #fff; }
+  .doc-page { padding: 48px 24px; }
+}</style>
+<style>:root {
+  /* 颜色 token · fallback 到中性值(独立打开也不裸)· 生产环境吃全局 --plain-* */
+  --plain-bg: var(--plain-bg, #ffffff);
+  --plain-surface: var(--plain-surface, #f7f7f8);
+  --plain-surface-2: var(--plain-surface-2, #efeff1);
+  --plain-text: var(--plain-text, #1a1a1a);
+  --plain-text-mute: var(--plain-text-mute, #55555c);
+  --plain-text-faint: var(--plain-text-faint, #8a8a92);
+  --plain-border: var(--plain-border, #e2e2e6);
+  --plain-border-strong: var(--plain-border-strong, #c8c8cf);
+  --plain-accent: var(--plain-accent, #3b5bdb);
+  --plain-accent-strong: var(--plain-accent-strong, #2f49b0);
+  --plain-accent-bg: var(--plain-accent-bg, #eef1fd);
+  --plain-success: var(--plain-success, #2f9e44);
+  --plain-warn: var(--plain-warn, #e8590c);
+  --plain-danger: var(--plain-danger, #e03131);
+  --plain-danger-bg: var(--plain-danger-bg, #fff0f0);
+
+  /* 舞台颜色映射(letterbox 用) */
+  --stage-bg: var(--plain-surface-2);
+  --slide-bg: var(--plain-bg);
+  --doc-page-bg: var(--plain-bg);
+  --doc-text: var(--plain-text);
+
+  /* 排版尺度(相对 · 不写死 px 字号) */
+  --v32-scale: 1;
+  --v32-gap: 1.5rem;
+  --v32-radius: 12px;
+  --v32-maxw: 760px;
+  font-family: var(--font-body, system-ui, -apple-system, "Segoe UI", sans-serif);
+}
+
+.v32-block { color: var(--plain-text); box-sizing: border-box; }
+.v32-block * { box-sizing: border-box; }
+.v32-kicker { font-size: 0.75em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--plain-accent); font-weight: 600; margin-bottom: 0.5em; }
+
+/* cover / closing */
+.v32-cover, .v32-closing { text-align: left; }
+.v32-cover-kicker { font-size: 0.85em; letter-spacing: 0.1em; text-transform: uppercase; color: var(--plain-accent); font-weight: 600; margin-bottom: 0.75em; }
+.v32-cover-display, .v32-closing-display { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; font-weight: 800; color: var(--plain-text); margin: 0; letter-spacing: -0.02em; }
+.v32-cover-tail { color: var(--plain-accent); }
+.v32-cover-lead, .v32-closing-sub { font-size: 1.15em; color: var(--plain-text-mute); margin-top: 0.75em; max-width: 42ch; }
+.v32-cover-byline { display: flex; gap: 1em; margin-top: 1.25em; color: var(--plain-text-faint); font-size: 0.9em; }
+.v32-closing-cta { display: flex; gap: 0.75em; margin-top: 1.5em; }
+.v32-cta { display: inline-flex; align-items: center; padding: 0.7em 1.4em; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 0.95em; }
+.v32-cta[data-kind="primary"] { background: var(--plain-accent); color: var(--plain-bg); }
+.v32-cta[data-kind="secondary"] { background: transparent; color: var(--plain-accent); border: 1px solid var(--plain-border-strong); }
+
+/* statement */
+.v32-statement-num { font-size: clamp(3rem, 8vw, 5rem); font-weight: 800; color: var(--plain-accent); line-height: 1; letter-spacing: -0.03em; }
+.v32-statement-text { font-size: 1.4em; font-weight: 600; color: var(--plain-text); margin: 0.4em 0 0; max-width: 32ch; }
+.v32-statement-anno { color: var(--plain-text-mute); margin-top: 0.6em; font-size: 0.95em; }
+
+/* prose */
+.v32-prose-body { color: var(--plain-text); line-height: 1.7; }
+.v32-prose-body h1,.v32-prose-body h2,.v32-prose-body h3 { color: var(--plain-text); line-height: 1.25; margin: 1.2em 0 0.4em; }
+.v32-prose-body p { margin: 0 0 0.9em; }
+.v32-prose-body ul,.v32-prose-body ol { margin: 0 0 0.9em; padding-left: 1.4em; }
+.v32-prose-body li { margin: 0.25em 0; }
+.v32-prose-body a { color: var(--plain-accent); }
+.v32-prose-body code { background: var(--plain-surface-2); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+.v32-prose[data-tone="warn"] { border-left: 3px solid var(--plain-warn); padding-left: 1em; }
+.v32-prose[data-tone="danger"] { border-left: 3px solid var(--plain-danger); padding-left: 1em; }
+.v32-prose[data-tone="ok"] { border-left: 3px solid var(--plain-success); padding-left: 1em; }
+
+/* heading */
+.v32-heading-text { color: var(--plain-text); font-weight: 700; margin: 0; line-height: 1.2; }
+.v32-heading[data-level="1"] .v32-heading-text { font-size: 2rem; }
+.v32-heading[data-level="2"] .v32-heading-text { font-size: 1.6rem; }
+.v32-heading[data-level="3"] .v32-heading-text { font-size: 1.3rem; }
+.v32-heading[data-level="4"] .v32-heading-text { font-size: 1.1rem; color: var(--plain-text-mute); }
+
+/* quote */
+.v32-quote { margin: 0; }
+.v32-quote-text { font-size: 1.4em; font-weight: 500; font-style: italic; color: var(--plain-text); margin: 0; border-left: 3px solid var(--plain-accent); padding-left: 0.8em; line-height: 1.4; }
+.v32-quote-attr { color: var(--plain-text-mute); margin-top: 0.6em; font-size: 0.95em; }
+
+/* callout */
+.v32-callout { border-radius: var(--v32-radius); padding: 1em 1.2em; border: 1px solid var(--plain-border); background: var(--plain-surface); }
+.v32-callout[data-tone="info"], .v32-callout[data-tone="note"] { border-color: var(--plain-accent); background: var(--plain-accent-bg); }
+.v32-callout[data-tone="ok"] { border-color: var(--plain-success); }
+.v32-callout[data-tone="tip"] { border-color: var(--plain-success); }
+.v32-callout[data-tone="warn"] { border-color: var(--plain-warn); }
+.v32-callout[data-tone="danger"] { border-color: var(--plain-danger); background: var(--plain-danger-bg); }
+.v32-callout-title { font-weight: 700; color: var(--plain-text); margin-bottom: 0.3em; }
+.v32-callout-body { color: var(--plain-text); line-height: 1.6; }
+.v32-callout-body p:last-child { margin-bottom: 0; }
+
+/* metrics */
+.v32-metrics-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--v32-gap); }
+.v32-metric { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.1em; }
+.v32-metric-value { font-size: 2rem; font-weight: 800; color: var(--plain-text); letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 0.25em; }
+.v32-metric-label { color: var(--plain-text-mute); margin-top: 0.25em; font-size: 0.95em; }
+.v32-metric-hint { color: var(--plain-text-faint); font-size: 0.8em; margin-top: 0.15em; }
+.v32-delta { font-size: 0.6em; }
+.v32-metric[data-delta="up"] .v32-delta { color: var(--plain-success); }
+.v32-metric[data-delta="down"] .v32-delta { color: var(--plain-danger); }
+.v32-metric[data-delta="flat"] .v32-delta { color: var(--plain-text-faint); }
+
+/* cards */
+.v32-cards-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--v32-gap); }
+.v32-cards[data-layout="steps"] .v32-cards-grid, .v32-cards[data-layout="numbered"] .v32-cards-grid { grid-template-columns: 1fr; }
+.v32-card { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.25em; position: relative; }
+.v32-card-num { font-size: 1.6em; font-weight: 800; color: var(--plain-accent); opacity: 0.5; }
+.v32-card-icon { font-size: 1.6em; }
+.v32-card-head { font-size: 1.05em; color: var(--plain-text); margin: 0.3em 0 0.4em; }
+.v32-card-body { color: var(--plain-text-mute); margin: 0; line-height: 1.55; font-size: 0.95em; }
+.v32-card-when { color: var(--plain-text-faint); font-size: 0.85em; margin-top: 0.5em; }
+.v32-card-metric { margin-top: 0.6em; }
+.v32-card-metric-v { font-weight: 800; color: var(--plain-accent); font-size: 1.2em; }
+.v32-card-metric-l { color: var(--plain-text-mute); font-size: 0.85em; margin-left: 0.4em; }
+
+/* sequence */
+.v32-seq-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-seq-list { list-style: none; margin: 0; padding: 0; }
+.v32-seq-item { position: relative; padding-left: 1.6em; padding-bottom: 1.1em; border-left: 2px solid var(--plain-border); }
+.v32-seq-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+.v32-seq-dot { position: absolute; left: -6px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--plain-accent); }
+.v32-seq-when { color: var(--plain-text-faint); font-size: 0.8em; letter-spacing: 0.04em; }
+.v32-seq-label { color: var(--plain-text); font-weight: 600; }
+.v32-seq-hint { color: var(--plain-text-mute); font-size: 0.9em; margin-top: 0.15em; }
+.v32-sequence[data-flow="arrow"] .v32-seq-item { border-left-style: dashed; }
+
+/* compare */
+.v32-compare-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--v32-gap); }
+.v32-compare-col { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.25em; }
+.v32-compare-col[data-side="right"] { border-color: var(--plain-accent); }
+.v32-compare-label { font-weight: 700; color: var(--plain-text); margin-bottom: 0.5em; }
+.v32-compare-bullets { margin: 0; padding-left: 1.2em; color: var(--plain-text-mute); }
+.v32-compare-bullets li { margin: 0.3em 0; }
+
+/* quadrant */
+.v32-quad-plot { position: relative; width: 100%; aspect-ratio: 16/10; background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); }
+.v32-quad-axis-x { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--plain-border-strong); }
+.v32-quad-axis-y { position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed var(--plain-border-strong); }
+.v32-quad-q { position: absolute; font-size: 0.8em; color: var(--plain-text-faint); padding: 0.5em; }
+.v32-quad-q[data-q="tl"] { top: 0; left: 0; }
+.v32-quad-q[data-q="tr"] { top: 0; right: 0; }
+.v32-quad-q[data-q="bl"] { bottom: 0; left: 0; }
+.v32-quad-q[data-q="br"] { bottom: 0; right: 0; }
+.v32-quad-point { position: absolute; transform: translate(-50%, 50%); display: flex; align-items: center; gap: 0.4em; }
+.v32-quad-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--plain-accent); display: inline-block; }
+.v32-quad-point[data-focal="true"] .v32-quad-dot { background: var(--plain-danger); width: 16px; height: 16px; }
+.v32-quad-plabel { font-size: 0.8em; color: var(--plain-text); white-space: nowrap; }
+.v32-quad-xlabel { position: absolute; bottom: -1.6em; left: 50%; transform: translateX(-50%); font-size: 0.8em; color: var(--plain-text-mute); }
+.v32-quad-ylabel { position: absolute; left: -1.6em; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 0.8em; color: var(--plain-text-mute); }
+
+/* table */
+.v32-table-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-table-scroll { overflow-x: auto; }
+.v32-table-el { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+.v32-table-el th, .v32-table-el td { text-align: left; padding: 0.6em 0.8em; border-bottom: 1px solid var(--plain-border); color: var(--plain-text); }
+.v32-table-el th { color: var(--plain-text-mute); font-weight: 700; border-bottom: 2px solid var(--plain-border-strong); }
+
+/* chart · SVG 用 currentColor → 这里给容器 color=accent,轴/文字降透明度 */
+.v32-chart-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.5em; }
+.v32-chart-svg { color: var(--plain-accent); max-width: 100%; }
+.v32-chart-svg svg { max-width: 100%; height: auto; }
+.v32-chart-caption { color: var(--plain-text-mute); font-size: 0.85em; margin-top: 0.4em; }
+
+/* media */
+.v32-media { display: grid; grid-template-columns: 1fr 1fr; gap: var(--v32-gap); align-items: center; }
+.v32-media[data-side="left"] { direction: rtl; }
+.v32-media[data-side="left"] > * { direction: ltr; }
+.v32-media-title { font-size: 1.5em; color: var(--plain-text); margin: 0.2em 0 0.4em; }
+.v32-media-body { color: var(--plain-text-mute); line-height: 1.6; }
+.v32-media-img { width: 100%; border-radius: var(--v32-radius); display: block; }
+.v32-media-ph { width: 100%; aspect-ratio: 4/3; background: var(--plain-surface-2); border-radius: var(--v32-radius); }
+.v32-media-quote blockquote { font-size: 1.3em; font-style: italic; color: var(--plain-text); margin: 0; }
+.v32-media-quote figcaption { color: var(--plain-text-mute); margin-top: 0.5em; }
+
+/* group */
+.v32-group-title { font-size: 1.3em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-group-inner { display: flex; gap: var(--v32-gap); }
+.v32-group-inner[data-layout="row"] { flex-direction: row; flex-wrap: wrap; }
+.v32-group-inner[data-layout="stack"] { flex-direction: column; }
+.v32-group-inner > .v32-block { flex: 1 1 0; min-width: 0; }
+.v32-group-inner > .v32-block[data-span="half"] { flex: 1 1 45%; }
+.v32-group-inner > .v32-block[data-span="third"] { flex: 1 1 30%; }
+.v32-group-inner > .v32-block[data-span="full"] { flex: 1 1 100%; }
+
+/* span(顶层 report 流) */
+.v32-flow > .v32-block[data-span="half"] { max-width: 50%; }
+.v32-flow > .v32-block[data-span="third"] { max-width: 33%; }</style>
+<style>.v32-flow { max-width: var(--v32-maxw); margin: 0 auto; }
+.v32-flow > * + * { margin-top: 2.5rem; }</style>
+<style>:root {
+  /* ── biennale 原 token(照搬旧模板 :root)── */
+  --paper: #E9E5DB;
+  --paper-deep: #DCD6C4;
+  --sun: #F1EE2E;
+  --sun-soft: #F8F39B;
+  --haze: #F0DA7C;
+  --ink: #1B2566;
+  --ember: #E26B4A;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Archivo', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+  /* ── 把 biennale 色映射到 --plain-* token,让"没覆盖的兜底块"自动获得 biennale 底色 ──
+     WCAG AA:ink(#1B2566) on paper(#E9E5DB) 对比≈10:1;mute 用 ink 混 paper 仍 ≥4.5:1 */
+  --plain-bg: var(--paper);
+  --plain-surface: var(--paper);
+  --plain-surface-2: var(--paper-deep);
+  --plain-text: var(--ink);
+  --plain-text-mute: color-mix(in oklab, var(--ink) 78%, var(--paper));
+  --plain-text-faint: color-mix(in oklab, var(--ink) 62%, var(--paper));
+  --plain-border: var(--ink);
+  --plain-border-strong: var(--ink);
+  --plain-accent: var(--ink);
+  --plain-accent-strong: var(--ink);
+  --plain-accent-bg: color-mix(in oklab, var(--sun) 30%, var(--paper) 70%);
+  --plain-success: var(--ink);
+  --plain-warn: var(--ember);
+  --plain-danger: var(--ember);
+  --plain-danger-bg: color-mix(in oklab, var(--ember) 14%, var(--paper) 86%);
+
+  --stage-bg: #1a1a1a;
+  --slide-bg: var(--paper);
+  --doc-page-bg: var(--paper);
+  --doc-text: var(--ink);
+
+  --font-body: var(--font-ui);
+  --v32-radius: 0px; /* biennale 铁律:零圆角 */
+  --v32-gap: 0px;    /* biennale 用 hairline 而非 gap 分隔 */
+}
+
+/* ── biennale 排版工具类(照搬旧 t-* · block renderer 直接用)── */
+.t-display { font-family: var(--font-display); font-weight: 400; font-size: clamp(120px, min(14.6vw, 22vh), 240px); line-height: 0.86; letter-spacing: -0.018em; color: var(--ink); }
+.t-display-md { font-family: var(--font-display); font-weight: 400; font-size: clamp(80px, min(10vw, 16vh), 200px); line-height: 0.86; letter-spacing: -0.018em; color: var(--ink); }
+.t-display-it { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(56px, min(7vw, 11vh), 120px); line-height: 1.04; letter-spacing: -0.005em; color: var(--ink); }
+.t-numeral-md { font-family: var(--font-display); font-weight: 400; font-size: clamp(56px, min(6vw, 10vh), 120px); line-height: 0.92; letter-spacing: -0.01em; color: var(--ink); }
+.t-headline { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, min(4.6vw, 7vh), 88px); line-height: 1.06; letter-spacing: -0.005em; color: var(--ink); }
+.t-headline-sm { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, min(3.2vw, 5vh), 48px); line-height: 1.05; color: var(--ink); }
+.t-body-lede { font-family: var(--font-ui); font-weight: 400; font-size: clamp(15px, 1.05vw, 18px); line-height: 1.55; color: var(--ink); }
+.t-body { font-family: var(--font-ui); font-weight: 400; font-size: clamp(13px, 0.92vw, 16px); line-height: 1.6; color: var(--ink); }
+.t-label { font-family: var(--font-ui); font-weight: 600; font-size: clamp(11px, 0.78vw, 14px); line-height: 1; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink); }
+.t-label-tight { font-family: var(--font-ui); font-weight: 600; font-size: clamp(10px, 0.7vw, 13px); line-height: 1; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink); }
+.t-label-wide { font-family: var(--font-ui); font-weight: 600; font-size: clamp(11px, 0.78vw, 14px); line-height: 1; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink); }
+.t-meta-mono { font-family: var(--font-mono); font-weight: 500; font-size: clamp(11px, 0.78vw, 13px); line-height: 1; letter-spacing: 0.06em; color: var(--ink); }
+
+/* biennale 分隔件 */
+.by-hairline { height: 1px; background: var(--ink); border: none; }
+.by-kicker-rail { display: flex; align-items: center; gap: 18px; margin-bottom: 24px; }
+.by-kicker-rail .bar { width: 2px; height: 18px; background: var(--ink); flex: none; }
+
+/* sun-bloom 气氛层(present 舞台绝对定位)· 照搬旧模板 */
+.by-bloom { position: absolute; pointer-events: none; border-radius: 50%; z-index: 0;
+  background: radial-gradient(closest-side, var(--sun) 0%, color-mix(in oklab, var(--sun) 50%, transparent) 40%, transparent 70%); opacity: 0.7; }
+.by-bloom-tr { width: 46vw; height: 46vw; right: -12vw; top: -12vw; }
+.by-bloom-bl { width: 40vw; height: 40vw; left: -14vw; bottom: -14vw; }
+.by-ember { background: radial-gradient(closest-side, color-mix(in oklab, var(--ember) 60%, transparent) 0%, transparent 70%); opacity: 0.22; }
+
+/* ── 覆盖块(自定义 class · 由下面 block renderer 产出)────────── */
+.by-cover { position: relative; }
+.by-cover__display { margin: 0; }
+.by-cover__display .by-tail { display: block; margin-top: 0.14em; }
+.by-cover__lead { margin: 36px 0 0; max-width: 720px; }
+.by-cover__byline { display: flex; gap: 28px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--ink); }
+
+.by-statement { position: relative; }
+.by-statement__num { margin: 0 0 24px; }
+.by-statement__text { margin: 0; max-width: 20ch; }
+.by-statement__anno { margin-top: 40px; }
+
+.by-metrics__title { margin: 0 0 40px; }
+.by-metrics__grid { display: grid; gap: 0; border-bottom: 1px solid var(--ink); }
+.by-metric { display: flex; flex-direction: column; gap: 14px; padding: 40px 32px; border-top: 1px solid var(--ink); }
+.by-metric__value { margin: 0; display: flex; align-items: baseline; gap: 0.2em; }
+.by-metric__delta { font-family: var(--font-ui); font-size: 0.28em; }
+.by-metric[data-delta="up"] .by-metric__delta { color: var(--ink); }
+.by-metric[data-delta="down"] .by-metric__delta { color: var(--ember); }
+.by-metric__hint { opacity: 0.7; }
+
+.by-cards__title { margin: 0 0 40px; max-width: 1400px; }
+.by-cards__list { border-bottom: 1px solid var(--ink); }
+/* numbered / steps → 横排大条目;grid → 网格 */
+.by-card-row { display: grid; grid-template-columns: 80px 1fr 200px; gap: 28px; padding: 28px 0; border-top: 1px solid var(--ink); align-items: baseline; }
+.by-card-row__num { line-height: 0.9; }
+.by-card-row__head { margin: 0 0 12px; }
+.by-card-row__body { margin: 0; max-width: 720px; }
+.by-card-row__metric { text-align: right; }
+.by-card-row__metric-v { margin: 0; }
+.by-card-row__metric-l { margin-top: 8px; opacity: 0.7; }
+.by-cards__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; border-bottom: 1px solid var(--ink); }
+.by-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; border-top: 1px solid var(--ink); }
+.by-card__num { opacity: 0.6; }
+.by-card__head { margin: 0; }
+.by-card__body { margin: 0; opacity: 0.78; }
+
+.by-closing { background: var(--ink); color: var(--paper); position: relative; }
+.by-closing__display { color: var(--paper); margin: 0; }
+.by-closing__sub { color: color-mix(in oklab, var(--paper) 80%, transparent); margin-top: 32px; max-width: 800px; }
+.by-closing .by-kicker-rail .bar { background: var(--sun); }
+.by-closing .t-label { color: var(--paper); }
+.by-closing__cta { display: flex; gap: 24px; margin-top: 56px; }
+.by-cta { padding: 18px 32px; text-decoration: none; font-family: var(--font-ui); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 13px; display: inline-block; }
+.by-cta[data-kind="primary"] { background: var(--sun); color: var(--ink); }
+.by-cta[data-kind="secondary"] { border: 1px solid var(--paper); color: var(--paper); }
+
+/* ── 兜底块的 biennale 重绘(prose/heading/quote/callout/table/compare 等走兜底,
+     这里把它们从"素模板圆角卡片"拉回 biennale 的 serif + hairline + 无圆角)── */
+.v32-heading-text, .v32-cards-title, .v32-metrics-title, .v32-compare-title, .v32-table-title, .v32-seq-title, .v32-group-title { font-family: var(--font-display); font-weight: 400; }
+.v32-prose-body { font-family: var(--font-ui); }
+.v32-quote-text, .v32-media-quote blockquote { font-family: var(--font-display); font-style: italic; }
+.v32-callout, .v32-metric, .v32-card, .v32-compare-col { border-radius: 0; box-shadow: none; }
+.v32-kicker, .v32-cover-kicker { font-family: var(--font-ui); letter-spacing: 0.22em; }
+
+/* present 舞台:paper 底 + 大内边距(旧 slide-inner 是 76px)· 覆盖块自己撑满 */
+[data-v32-mode="present"] .v32-slide-inner { padding: 76px 76px 88px; }
+[data-v32-mode="present"] .by-cover__display { font-size: clamp(120px, 14vw, 240px); }
+[data-v32-mode="present"] .by-closing__display { font-size: clamp(80px, 10vw, 200px); }</style>
+</head>
+<body>
+<main class="doc-page"><article class="doc-article v32-flow"><section class="v32-block v32-heading" data-block-id="b0" data-level="1">
+  <h1 class="v32-heading-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b0/text" data-plain-editable="true" data-plain-text-path="/blocks/b0/text" data-plain-label="小标题">A Case for Surgical Edits</h1>
+</section>
+<section class="v32-block v32-heading" data-block-id="b1" data-level="2">
+  <h2 class="v32-heading-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b1/text" data-plain-editable="true" data-plain-text-path="/blocks/b1/text" data-plain-label="小标题">The temptation of full regeneration</h2>
+</section>
+<section class="v32-block v32-prose" data-block-id="b2">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b2/body" data-plain-label="正文"><p>When you prompt an AI agent to &quot;update the quarterly report,&quot; it’s tempting to have the model regenerate the whole document from scratch. The context is fresh, the wording can be improved, and you avoid brittle diffs. But this approach has a hidden cost.</p>
+<p>Regeneration treats the existing document as a source of content rather than a source of truth. Every generated token is a chance for drift: numbers get subtly altered, phrasing changes against your will, structure breaks silent. The document isn’t being edited; it’s being replaced with a plausible confabulation.</p>
+</div>
+</section>
+<aside class="v32-block v32-callout" data-block-id="b3" data-tone="warn" role="note">
+  <div class="v32-callout-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b3/title" data-plain-editable="true" data-plain-text-path="/blocks/b3/title" data-plain-label="提示标题">Regeneration is non-deterministic</div>
+  <div class="v32-callout-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b3/body" data-plain-label="提示正文"><p>Run the same prompt twice on a large document and you’ll get two different results, each confident and internally consistent — but not necessarily faithful.</p>
+</div>
+</aside>
+<section class="v32-block v32-heading" data-block-id="b4" data-level="2">
+  <h2 class="v32-heading-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b4/text" data-plain-editable="true" data-plain-text-path="/blocks/b4/text" data-plain-label="小标题">JSON Patch: surgical, precise, reviewable</h2>
+</section>
+<section class="v32-block v32-prose" data-block-id="b5">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b5/body" data-plain-label="正文"><p>JSON Patch (RFC 6902) is a standard for expressing mutations to JSON documents as an array of operations — add, remove, replace, move, copy, test. When an AI agent edits a document, it can first load the current JSON, decide exactly what should change, and then emit a patch that embodies only those decisions.</p>
+<p>Because the patch is data, not prose, it is automatically verifiable: you can apply it to the original document and check that the result satisfies all constraints. No hidden regenerations, no silent deletions.</p>
+</div>
+</section>
+<section class="v32-block v32-table" data-block-id="b6">
+  
+  <div class="v32-table-scroll"><table class="v32-table-el"><thead><tr><th>Aspect</th><th>Full regeneration</th><th>JSON Patch</th></tr></thead><tbody><tr><td>Granularity</td><td>Whole document</td><td>Field-level or array-level</td></tr><tr><td>Risk of drift</td><td>High — content reworded</td><td>Low — untouched parts stay intact</td></tr><tr><td>Review effort</td><td>Read entire new doc</td><td>Review small operation list</td></tr><tr><td>Determinism</td><td>Poor — non-deterministic</td><td>Good — operations are explicit</td></tr></tbody></table></div>
+</section>
+<section class="v32-block v32-heading" data-block-id="b7" data-level="2">
+  <h2 class="v32-heading-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b7/text" data-plain-editable="true" data-plain-text-path="/blocks/b7/text" data-plain-label="小标题">Why plain-text source unlocks the rest</h2>
+</section>
+<section class="v32-block v32-prose" data-block-id="b8">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b8/body" data-plain-label="正文"><p>A JSON document is a structured object, but humans write prose, markdown, or LaTeX. A plain-text source that follows a light markup (e.g., Markdown) can be parsed into a JSON-like tree — headings, paragraphs, lists, tables, code blocks. That tree is the natural target for JSON Patch.</p>
+<p>Now it becomes easy: an agent edits a paragraph, moves a section, or corrects a number, and the patch records only that semantic change. Reviewing a patch feels like reviewing a redline, not diffing two entire documents.</p>
+</div>
+</section>
+<figure class="v32-block v32-quote" data-block-id="b9">
+  <blockquote class="v32-quote-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b9/text" data-plain-editable="true" data-plain-text-path="/blocks/b9/text" data-plain-label="引语">The cost of an edit should be proportional to the size of the edit, not the size of the document.</blockquote>
+  <figcaption class="v32-quote-attr" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b9/attribution" data-plain-editable="true" data-plain-text-path="/blocks/b9/attribution" data-plain-label="出处">— Practical versioning principle</figcaption>
+</figure>
+<section class="v32-block v32-heading" data-block-id="b10" data-level="2">
+  <h2 class="v32-heading-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b10/text" data-plain-editable="true" data-plain-text-path="/blocks/b10/text" data-plain-label="小标题">Concrete workflow for an agentic editor</h2>
+</section>
+<section class="v32-block v32-prose" data-block-id="b11">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b11/body" data-plain-label="正文"><ol>
+<li>Parse the existing plain-text source into a structured tree (e.g., a JSON representation).</li>
+<li>Identify the intended change (e.g., replace finding #3, update the forecast table).</li>
+<li>Emit a JSON Patch with operations that touch only the affected parts.</li>
+<li>Apply the patch to the tree, then serialize back to plain text for human review.</li>
+<li>Store the patch alongside the document, enabling rollback to any past state.</li>
+</ol>
+</div>
+</section>
+<section class="v32-block v32-prose" data-block-id="b12">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b12/body" data-plain-label="正文"><p>This turns an agent into a precision editor. It doesn’t need to rewrite what it doesn’t understand — it can leave the untouched parts exactly as they were.</p>
+</div>
+</section>
+<section class="v32-block v32-heading" data-block-id="b13" data-level="2">
+  <h2 class="v32-heading-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b13/text" data-plain-editable="true" data-plain-text-path="/blocks/b13/text" data-plain-label="小标题">Practical gains in one glance</h2>
+</section>
+<section class="v32-block v32-group" data-block-id="b14" data-layout="stack">
+  
+  <div class="v32-group-inner" data-layout="stack"><section class="v32-block v32-prose" data-block-id="b14-h">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b14-h/body" data-plain-label="正文"><p>94% smaller diffs</p>
+</div>
+</section>
+<section class="v32-block by-metrics" data-block-id="b14-m">
+  <div class="by-bloom by-ember by-bloom-tr" style="width:22vw;height:22vw;right:6vw;top:8vh;"></div>
+  <h2 class="t-headline by-metrics__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b14-m/title" data-plain-editable="true" data-plain-text-path="/blocks/b14-m/title" data-plain-label="指标组标题">Measured impact of switching from regeneration to patch-based edits</h2>
+  <div class="by-metrics__grid" style="grid-template-columns: repeat(2, 1fr);"><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">unused</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b14-m/items/0/label" data-plain-editable="true" data-plain-text-path="/blocks/b14-m/items/0/label" data-plain-label="指标名">Diff size (regenerate)</div>
+      <div class="t-body by-metric__hint">missed</div>
+    </div><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">6%</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b14-m/items/1/label" data-plain-editable="true" data-plain-text-path="/blocks/b14-m/items/1/label" data-plain-label="指标名">Diff size (patch)</div>
+      <div class="t-body by-metric__hint">on track</div>
+    </div></div>
+</section>
+<section class="v32-block v32-prose" data-block-id="b14-n">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b14-n/body" data-plain-label="正文"><p>Based on a 4-page quarterly report; the regenerated version touched every sentence.</p>
+</div>
+</section></div>
+</section>
+<section class="v32-block v32-heading" data-block-id="b15" data-level="1">
+  <h1 class="v32-heading-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b15/text" data-plain-editable="true" data-plain-text-path="/blocks/b15/text" data-plain-label="小标题">In closing</h1>
+</section>
+<section class="v32-block v32-prose" data-block-id="b16">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/b16/body" data-plain-label="正文"><p>If you want an agent to author whole essays, regeneration is fine. But if you want it to edit — to revise, to correct, to update — then a JSON Patch is the missing layer of precision.</p>
+<p>The source isn’t merely a file; it’s a contract. A patch respects that contract by changing exactly what is agreed upon, nothing more. Pair that with plain-text source, and the full cycle becomes transparent, reviewable, and reversible.</p>
+</div>
+</section></article></main>
+
+</body>
+</html>

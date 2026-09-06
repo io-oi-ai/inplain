@@ -268,7 +268,7 @@ function renderImage(d: SectionData): string {
   if (!src) {
     return `<section class="plain-section plain-deck-image plain-deck-image-empty">
   <div class="plain-deck-container">
-    <div class="plain-deck-kicker">IMAGE · 待上传素材或填 src</div>
+    <div class="plain-deck-kicker">IMAGE — add a src or upload an asset</div>
     ${caption ? `<p>${escapeHtml(caption)}</p>` : ""}
   </div>
 </section>`;
@@ -299,7 +299,7 @@ function renderGallery(d: SectionData): string {
   if (items.length === 0) {
     return `<section class="plain-section plain-deck-gallery plain-deck-gallery-empty">
   <div class="plain-deck-container">
-    <div class="plain-deck-kicker">GALLERY · 待添加图片</div>
+    <div class="plain-deck-kicker">GALLERY — no images yet</div>
     ${title ? `<h2>${escapeHtml(title)}</h2>` : ""}
   </div>
 </section>`;
@@ -346,7 +346,7 @@ function renderMediaSplit(d: SectionData): string {
         ${
           src
             ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" loading="lazy" />`
-            : `<div class="plain-deck-image-empty"><span>IMAGE · 待上传素材</span></div>`
+            : `<div class="plain-deck-image-empty"><span>IMAGE — no asset yet</span></div>`
         }
       </figure>
       <div class="plain-deck-media-split-text">

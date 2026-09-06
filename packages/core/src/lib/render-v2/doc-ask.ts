@@ -64,10 +64,10 @@ export function renderAskFab(kind: "deck" | "doc" | "sheet" = "doc"): string {
   </button>
   <div class="plain-ask-panel" data-ask-panel>
     <div class="plain-ask-head"><strong>${label}</strong><button class="plain-ask-close" data-ask-close type="button" aria-label="Close">×</button></div>
-    <div class="plain-ask-log" data-ask-log><div class="plain-ask-empty">基于本内容回答你的问题</div></div>
+    <div class="plain-ask-log" data-ask-log><div class="plain-ask-empty">Answers grounded in this document</div></div>
     <form class="plain-ask-form" data-ask-form>
       <input type="text" placeholder="e.g. What does this cover?" data-ask-input autocomplete="off" />
-      <button type="submit" data-ask-send>问</button>
+      <button type="submit" data-ask-send>Ask</button>
     </form>
   </div>`;
 }

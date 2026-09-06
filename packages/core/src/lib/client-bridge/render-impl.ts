@@ -276,9 +276,9 @@ ${narrativeHasMermaid ? `<style>${MERMAID_CSS}</style>` : ""}
     <div class="kicker">Plain Sheet</div>
     <h1>${esc(doc.title)}</h1>
     <div class="meta">
-      <span class="chip">${doc.columns.length} 列</span>
-      <span class="chip">${doc.rows.length} 行</span>
-      ${doc.charts.length > 0 ? `<span class="chip">${doc.charts.length} 个图表</span>` : ""}
+      <span class="chip">${doc.columns.length} columns</span>
+      <span class="chip">${doc.rows.length} rows</span>
+      ${doc.charts.length > 0 ? `<span class="chip">${doc.charts.length} charts</span>` : ""}
     </div>
   </header>
 
@@ -291,7 +291,7 @@ ${narrativeHasMermaid ? `<style>${MERMAID_CSS}</style>` : ""}
 
   ${
     doc.charts.length > 0
-      ? `<h2 class="sheet-section-title">图表</h2>
+      ? `<h2 class="sheet-section-title">Charts</h2>
   <div class="charts-grid">${charts}</div>`
       : ""
   }

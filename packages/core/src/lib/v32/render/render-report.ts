@@ -207,7 +207,7 @@ ${ctx.fonts}
   </div>
   <button class="deck-nav deck-nav-prev" aria-label="Previous" type="button">‹</button>
   <button class="deck-nav deck-nav-next" aria-label="Next" type="button">›</button>
-  <button class="deck-mode-toggle" aria-label="Toggle view mode" type="button" title="Slides / scroll">☰ 滚动</button>
+  <button class="deck-mode-toggle" aria-label="Toggle view mode" type="button" title="Slides / scroll">☰ Scroll</button>
 </div>
 <script>${STAGE_SCALER_JS}</script>
 ${ctx.editScript}

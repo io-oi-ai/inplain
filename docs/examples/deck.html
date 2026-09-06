@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" data-plain-template="biennale-yellow" data-plain-kind="present" data-v32-mode="present">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Plain: One Source, Many Views</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--stage-bg, #000); }
+.deck-viewport { position: fixed; inset: 0; overflow: hidden; background: var(--stage-bg, #000); }
+.deck-stage {
+  position: absolute; left: 0; top: 0;
+  width: 1920px; height: 1080px;
+  overflow: hidden; transform-origin: 0 0;
+  background: var(--slide-bg, #fff);
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1920px; height: 1080px;
+  overflow: hidden; display: block;
+  visibility: hidden; opacity: 0; pointer-events: none;
+  background: var(--slide-bg, #fff);
+  /* B · 翻页过渡:横向滑动 + 淡入(不再瞬切) · 非 active 偏移到一侧 */
+  transform: translateX(var(--slide-shift, 60px));
+  transition: opacity 420ms cubic-bezier(0.22,1,0.36,1), transform 420ms cubic-bezier(0.22,1,0.36,1), visibility 0s linear 420ms;
+}
+.slide.active {
+  visibility: visible; opacity: 1; pointer-events: auto; z-index: 1;
+  transform: translateX(0);
+  transition: opacity 420ms cubic-bezier(0.22,1,0.36,1), transform 420ms cubic-bezier(0.22,1,0.36,1), visibility 0s;
+}
+/* 翻页方向:向后翻(prev)时新页从左侧滑入 · JS 切 data-dir 控制 */
+.deck-stage[data-dir="prev"] .slide { --slide-shift: -60px; }
+.deck-stage[data-dir="next"] .slide { --slide-shift: 60px; }
+
+/* ── A · 长页滚动模式 ──────────────────────────────────
+   .deck-viewport.scroll-mode:slide 从 absolute 叠放 → 垂直流式,viewport 可滚动。
+   stage 取消 transform scale(改由每个 slide 自己 letterbox),slide 之间留间隔。 */
+.deck-viewport.scroll-mode { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+.deck-viewport.scroll-mode .deck-stage {
+  position: relative; width: 100%; height: auto; transform: none !important;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  background: var(--stage-bg, #000);
+}
+.deck-viewport.scroll-mode .slide {
+  position: relative; inset: auto;
+  visibility: visible; opacity: 1; pointer-events: auto;
+  transform: none; transition: none;
+  /* 保持 16:9 · 宽度撑满(letterbox 由 aspect-ratio 控),整页缩放交给 CSS scale */
+  flex: none;
+}
+.deck-viewport.scroll-mode .deck-nav { display: none; }
+img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+.deck-controls { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 1000; }
+/* 上/下页按钮 · 固定在 viewport 两侧,不依赖键盘焦点(工作台 iframe 也能翻页) */
+.deck-nav { position: fixed; top: 50%; transform: translateY(-50%); z-index: 1000;
+  width: 44px; height: 44px; border-radius: 999px; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.42); color: #fff; font-size: 20px; line-height: 1;
+  backdrop-filter: blur(6px); transition: background 160ms ease, opacity 160ms ease;
+  -webkit-tap-highlight-color: transparent; user-select: none; }
+.deck-nav:hover { background: rgba(0,0,0,0.66); }
+.deck-nav:disabled { opacity: 0.22; cursor: default; }
+.deck-nav-prev { left: 18px; }
+.deck-nav-next { right: 18px; }
+/* 浏览模式切换(幻灯片 ⇄ 长页滚动) · 右上角 */
+.deck-mode-toggle { position: fixed; top: 18px; right: 18px; z-index: 1001;
+  height: 34px; padding: 0 14px; border-radius: 999px; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0,0,0,0.42); color: #fff; font: 600 12px/1 system-ui, sans-serif;
+  backdrop-filter: blur(6px); transition: background 160ms ease;
+  -webkit-tap-highlight-color: transparent; user-select: none; }
+.deck-mode-toggle:hover { background: rgba(0,0,0,0.66); }
+@media print { .deck-nav, .deck-mode-toggle { display: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .slide { transition: none; }
+}
+@media print {
+  html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+  .deck-viewport { position: static; overflow: visible; background: #fff; }
+  .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+  .slide { position: static; width: 1920px; height: 1080px; opacity: 1; visibility: visible; page-break-after: always; display: block !important; }
+  .deck-controls { display: none !important; }
+}</style>
+<style>:root {
+  /* 颜色 token · fallback 到中性值(独立打开也不裸)· 生产环境吃全局 --plain-* */
+  --plain-bg: var(--plain-bg, #ffffff);
+  --plain-surface: var(--plain-surface, #f7f7f8);
+  --plain-surface-2: var(--plain-surface-2, #efeff1);
+  --plain-text: var(--plain-text, #1a1a1a);
+  --plain-text-mute: var(--plain-text-mute, #55555c);
+  --plain-text-faint: var(--plain-text-faint, #8a8a92);
+  --plain-border: var(--plain-border, #e2e2e6);
+  --plain-border-strong: var(--plain-border-strong, #c8c8cf);
+  --plain-accent: var(--plain-accent, #3b5bdb);
+  --plain-accent-strong: var(--plain-accent-strong, #2f49b0);
+  --plain-accent-bg: var(--plain-accent-bg, #eef1fd);
+  --plain-success: var(--plain-success, #2f9e44);
+  --plain-warn: var(--plain-warn, #e8590c);
+  --plain-danger: var(--plain-danger, #e03131);
+  --plain-danger-bg: var(--plain-danger-bg, #fff0f0);
+
+  /* 舞台颜色映射(letterbox 用) */
+  --stage-bg: var(--plain-surface-2);
+  --slide-bg: var(--plain-bg);
+  --doc-page-bg: var(--plain-bg);
+  --doc-text: var(--plain-text);
+
+  /* 排版尺度(相对 · 不写死 px 字号) */
+  --v32-scale: 1;
+  --v32-gap: 1.5rem;
+  --v32-radius: 12px;
+  --v32-maxw: 760px;
+  font-family: var(--font-body, system-ui, -apple-system, "Segoe UI", sans-serif);
+}
+
+.v32-block { color: var(--plain-text); box-sizing: border-box; }
+.v32-block * { box-sizing: border-box; }
+.v32-kicker { font-size: 0.75em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--plain-accent); font-weight: 600; margin-bottom: 0.5em; }
+
+/* cover / closing */
+.v32-cover, .v32-closing { text-align: left; }
+.v32-cover-kicker { font-size: 0.85em; letter-spacing: 0.1em; text-transform: uppercase; color: var(--plain-accent); font-weight: 600; margin-bottom: 0.75em; }
+.v32-cover-display, .v32-closing-display { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; font-weight: 800; color: var(--plain-text); margin: 0; letter-spacing: -0.02em; }
+.v32-cover-tail { color: var(--plain-accent); }
+.v32-cover-lead, .v32-closing-sub { font-size: 1.15em; color: var(--plain-text-mute); margin-top: 0.75em; max-width: 42ch; }
+.v32-cover-byline { display: flex; gap: 1em; margin-top: 1.25em; color: var(--plain-text-faint); font-size: 0.9em; }
+.v32-closing-cta { display: flex; gap: 0.75em; margin-top: 1.5em; }
+.v32-cta { display: inline-flex; align-items: center; padding: 0.7em 1.4em; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 0.95em; }
+.v32-cta[data-kind="primary"] { background: var(--plain-accent); color: var(--plain-bg); }
+.v32-cta[data-kind="secondary"] { background: transparent; color: var(--plain-accent); border: 1px solid var(--plain-border-strong); }
+
+/* statement */
+.v32-statement-num { font-size: clamp(3rem, 8vw, 5rem); font-weight: 800; color: var(--plain-accent); line-height: 1; letter-spacing: -0.03em; }
+.v32-statement-text { font-size: 1.4em; font-weight: 600; color: var(--plain-text); margin: 0.4em 0 0; max-width: 32ch; }
+.v32-statement-anno { color: var(--plain-text-mute); margin-top: 0.6em; font-size: 0.95em; }
+
+/* prose */
+.v32-prose-body { color: var(--plain-text); line-height: 1.7; }
+.v32-prose-body h1,.v32-prose-body h2,.v32-prose-body h3 { color: var(--plain-text); line-height: 1.25; margin: 1.2em 0 0.4em; }
+.v32-prose-body p { margin: 0 0 0.9em; }
+.v32-prose-body ul,.v32-prose-body ol { margin: 0 0 0.9em; padding-left: 1.4em; }
+.v32-prose-body li { margin: 0.25em 0; }
+.v32-prose-body a { color: var(--plain-accent); }
+.v32-prose-body code { background: var(--plain-surface-2); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+.v32-prose[data-tone="warn"] { border-left: 3px solid var(--plain-warn); padding-left: 1em; }
+.v32-prose[data-tone="danger"] { border-left: 3px solid var(--plain-danger); padding-left: 1em; }
+.v32-prose[data-tone="ok"] { border-left: 3px solid var(--plain-success); padding-left: 1em; }
+
+/* heading */
+.v32-heading-text { color: var(--plain-text); font-weight: 700; margin: 0; line-height: 1.2; }
+.v32-heading[data-level="1"] .v32-heading-text { font-size: 2rem; }
+.v32-heading[data-level="2"] .v32-heading-text { font-size: 1.6rem; }
+.v32-heading[data-level="3"] .v32-heading-text { font-size: 1.3rem; }
+.v32-heading[data-level="4"] .v32-heading-text { font-size: 1.1rem; color: var(--plain-text-mute); }
+
+/* quote */
+.v32-quote { margin: 0; }
+.v32-quote-text { font-size: 1.4em; font-weight: 500; font-style: italic; color: var(--plain-text); margin: 0; border-left: 3px solid var(--plain-accent); padding-left: 0.8em; line-height: 1.4; }
+.v32-quote-attr { color: var(--plain-text-mute); margin-top: 0.6em; font-size: 0.95em; }
+
+/* callout */
+.v32-callout { border-radius: var(--v32-radius); padding: 1em 1.2em; border: 1px solid var(--plain-border); background: var(--plain-surface); }
+.v32-callout[data-tone="info"], .v32-callout[data-tone="note"] { border-color: var(--plain-accent); background: var(--plain-accent-bg); }
+.v32-callout[data-tone="ok"] { border-color: var(--plain-success); }
+.v32-callout[data-tone="tip"] { border-color: var(--plain-success); }
+.v32-callout[data-tone="warn"] { border-color: var(--plain-warn); }
+.v32-callout[data-tone="danger"] { border-color: var(--plain-danger); background: var(--plain-danger-bg); }
+.v32-callout-title { font-weight: 700; color: var(--plain-text); margin-bottom: 0.3em; }
+.v32-callout-body { color: var(--plain-text); line-height: 1.6; }
+.v32-callout-body p:last-child { margin-bottom: 0; }
+
+/* metrics */
+.v32-metrics-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--v32-gap); }
+.v32-metric { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.1em; }
+.v32-metric-value { font-size: 2rem; font-weight: 800; color: var(--plain-text); letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 0.25em; }
+.v32-metric-label { color: var(--plain-text-mute); margin-top: 0.25em; font-size: 0.95em; }
+.v32-metric-hint { color: var(--plain-text-faint); font-size: 0.8em; margin-top: 0.15em; }
+.v32-delta { font-size: 0.6em; }
+.v32-metric[data-delta="up"] .v32-delta { color: var(--plain-success); }
+.v32-metric[data-delta="down"] .v32-delta { color: var(--plain-danger); }
+.v32-metric[data-delta="flat"] .v32-delta { color: var(--plain-text-faint); }
+
+/* cards */
+.v32-cards-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--v32-gap); }
+.v32-cards[data-layout="steps"] .v32-cards-grid, .v32-cards[data-layout="numbered"] .v32-cards-grid { grid-template-columns: 1fr; }
+.v32-card { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.25em; position: relative; }
+.v32-card-num { font-size: 1.6em; font-weight: 800; color: var(--plain-accent); opacity: 0.5; }
+.v32-card-icon { font-size: 1.6em; }
+.v32-card-head { font-size: 1.05em; color: var(--plain-text); margin: 0.3em 0 0.4em; }
+.v32-card-body { color: var(--plain-text-mute); margin: 0; line-height: 1.55; font-size: 0.95em; }
+.v32-card-when { color: var(--plain-text-faint); font-size: 0.85em; margin-top: 0.5em; }
+.v32-card-metric { margin-top: 0.6em; }
+.v32-card-metric-v { font-weight: 800; color: var(--plain-accent); font-size: 1.2em; }
+.v32-card-metric-l { color: var(--plain-text-mute); font-size: 0.85em; margin-left: 0.4em; }
+
+/* sequence */
+.v32-seq-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-seq-list { list-style: none; margin: 0; padding: 0; }
+.v32-seq-item { position: relative; padding-left: 1.6em; padding-bottom: 1.1em; border-left: 2px solid var(--plain-border); }
+.v32-seq-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+.v32-seq-dot { position: absolute; left: -6px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--plain-accent); }
+.v32-seq-when { color: var(--plain-text-faint); font-size: 0.8em; letter-spacing: 0.04em; }
+.v32-seq-label { color: var(--plain-text); font-weight: 600; }
+.v32-seq-hint { color: var(--plain-text-mute); font-size: 0.9em; margin-top: 0.15em; }
+.v32-sequence[data-flow="arrow"] .v32-seq-item { border-left-style: dashed; }
+
+/* compare */
+.v32-compare-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--v32-gap); }
+.v32-compare-col { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.25em; }
+.v32-compare-col[data-side="right"] { border-color: var(--plain-accent); }
+.v32-compare-label { font-weight: 700; color: var(--plain-text); margin-bottom: 0.5em; }
+.v32-compare-bullets { margin: 0; padding-left: 1.2em; color: var(--plain-text-mute); }
+.v32-compare-bullets li { margin: 0.3em 0; }
+
+/* quadrant */
+.v32-quad-plot { position: relative; width: 100%; aspect-ratio: 16/10; background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); }
+.v32-quad-axis-x { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--plain-border-strong); }
+.v32-quad-axis-y { position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed var(--plain-border-strong); }
+.v32-quad-q { position: absolute; font-size: 0.8em; color: var(--plain-text-faint); padding: 0.5em; }
+.v32-quad-q[data-q="tl"] { top: 0; left: 0; }
+.v32-quad-q[data-q="tr"] { top: 0; right: 0; }
+.v32-quad-q[data-q="bl"] { bottom: 0; left: 0; }
+.v32-quad-q[data-q="br"] { bottom: 0; right: 0; }
+.v32-quad-point { position: absolute; transform: translate(-50%, 50%); display: flex; align-items: center; gap: 0.4em; }
+.v32-quad-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--plain-accent); display: inline-block; }
+.v32-quad-point[data-focal="true"] .v32-quad-dot { background: var(--plain-danger); width: 16px; height: 16px; }
+.v32-quad-plabel { font-size: 0.8em; color: var(--plain-text); white-space: nowrap; }
+.v32-quad-xlabel { position: absolute; bottom: -1.6em; left: 50%; transform: translateX(-50%); font-size: 0.8em; color: var(--plain-text-mute); }
+.v32-quad-ylabel { position: absolute; left: -1.6em; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 0.8em; color: var(--plain-text-mute); }
+
+/* table */
+.v32-table-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-table-scroll { overflow-x: auto; }
+.v32-table-el { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+.v32-table-el th, .v32-table-el td { text-align: left; padding: 0.6em 0.8em; border-bottom: 1px solid var(--plain-border); color: var(--plain-text); }
+.v32-table-el th { color: var(--plain-text-mute); font-weight: 700; border-bottom: 2px solid var(--plain-border-strong); }
+
+/* chart · SVG 用 currentColor → 这里给容器 color=accent,轴/文字降透明度 */
+.v32-chart-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.5em; }
+.v32-chart-svg { color: var(--plain-accent); max-width: 100%; }
+.v32-chart-svg svg { max-width: 100%; height: auto; }
+.v32-chart-caption { color: var(--plain-text-mute); font-size: 0.85em; margin-top: 0.4em; }
+
+/* media */
+.v32-media { display: grid; grid-template-columns: 1fr 1fr; gap: var(--v32-gap); align-items: center; }
+.v32-media[data-side="left"] { direction: rtl; }
+.v32-media[data-side="left"] > * { direction: ltr; }
+.v32-media-title { font-size: 1.5em; color: var(--plain-text); margin: 0.2em 0 0.4em; }
+.v32-media-body { color: var(--plain-text-mute); line-height: 1.6; }
+.v32-media-img { width: 100%; border-radius: var(--v32-radius); display: block; }
+.v32-media-ph { width: 100%; aspect-ratio: 4/3; background: var(--plain-surface-2); border-radius: var(--v32-radius); }
+.v32-media-quote blockquote { font-size: 1.3em; font-style: italic; color: var(--plain-text); margin: 0; }
+.v32-media-quote figcaption { color: var(--plain-text-mute); margin-top: 0.5em; }
+
+/* group */
+.v32-group-title { font-size: 1.3em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-group-inner { display: flex; gap: var(--v32-gap); }
+.v32-group-inner[data-layout="row"] { flex-direction: row; flex-wrap: wrap; }
+.v32-group-inner[data-layout="stack"] { flex-direction: column; }
+.v32-group-inner > .v32-block { flex: 1 1 0; min-width: 0; }
+.v32-group-inner > .v32-block[data-span="half"] { flex: 1 1 45%; }
+.v32-group-inner > .v32-block[data-span="third"] { flex: 1 1 30%; }
+.v32-group-inner > .v32-block[data-span="full"] { flex: 1 1 100%; }
+
+/* span(顶层 report 流) */
+.v32-flow > .v32-block[data-span="half"] { max-width: 50%; }
+.v32-flow > .v32-block[data-span="third"] { max-width: 33%; }</style>
+<style>/* present:每屏内容居中,内边距按 1920 舞台;字号放大到演示基准 */
+.slide { display: flex; align-items: center; }
+.v32-slide-inner { width: 100%; padding: 96px 120px; display: flex; flex-direction: column; gap: 32px; justify-content: center; }
+.v32-slide-inner { font-size: 24px; }
+.v32-slide-inner .v32-cover-display, .v32-slide-inner .v32-closing-display { font-size: 96px; }
+.v32-slide-inner .v32-statement-num { font-size: 160px; }
+.v32-slide-inner .v32-metric-value { font-size: 56px; }
+/* 单屏多块也走垂直堆叠 · group 内仍横排 */</style>
+<style>@media (prefers-reduced-motion: no-preference) {
+  /* 仅 JS 接管(.anim-ready)后启用 → 无 JS/JS 挂时元素默认可见,绝不白屏 */
+  .deck-stage.anim-ready .slide > * {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1), transform 0.55s cubic-bezier(0.16,1,0.3,1);
+  }
+  .deck-stage.anim-ready .slide.active > * { opacity: 1; transform: none; }
+  /* 顶层块逐个 stagger(切页时错落入场,最多 6 个) */
+  .deck-stage.anim-ready .slide.active > *:nth-child(1){transition-delay:.06s}
+  .deck-stage.anim-ready .slide.active > *:nth-child(2){transition-delay:.14s}
+  .deck-stage.anim-ready .slide.active > *:nth-child(3){transition-delay:.22s}
+  .deck-stage.anim-ready .slide.active > *:nth-child(4){transition-delay:.30s}
+  .deck-stage.anim-ready .slide.active > *:nth-child(5){transition-delay:.38s}
+  .deck-stage.anim-ready .slide.active > *:nth-child(6){transition-delay:.46s}
+}
+/* 打印 / 导出:所有页元素强制可见(不靠 active) */
+@media print {
+  .slide > * { opacity: 1 !important; transform: none !important; }
+}</style>
+<style>:root {
+  /* ── biennale 原 token(照搬旧模板 :root)── */
+  --paper: #E9E5DB;
+  --paper-deep: #DCD6C4;
+  --sun: #F1EE2E;
+  --sun-soft: #F8F39B;
+  --haze: #F0DA7C;
+  --ink: #1B2566;
+  --ember: #E26B4A;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Archivo', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+  /* ── 把 biennale 色映射到 --plain-* token,让"没覆盖的兜底块"自动获得 biennale 底色 ──
+     WCAG AA:ink(#1B2566) on paper(#E9E5DB) 对比≈10:1;mute 用 ink 混 paper 仍 ≥4.5:1 */
+  --plain-bg: var(--paper);
+  --plain-surface: var(--paper);
+  --plain-surface-2: var(--paper-deep);
+  --plain-text: var(--ink);
+  --plain-text-mute: color-mix(in oklab, var(--ink) 78%, var(--paper));
+  --plain-text-faint: color-mix(in oklab, var(--ink) 62%, var(--paper));
+  --plain-border: var(--ink);
+  --plain-border-strong: var(--ink);
+  --plain-accent: var(--ink);
+  --plain-accent-strong: var(--ink);
+  --plain-accent-bg: color-mix(in oklab, var(--sun) 30%, var(--paper) 70%);
+  --plain-success: var(--ink);
+  --plain-warn: var(--ember);
+  --plain-danger: var(--ember);
+  --plain-danger-bg: color-mix(in oklab, var(--ember) 14%, var(--paper) 86%);
+
+  --stage-bg: #1a1a1a;
+  --slide-bg: var(--paper);
+  --doc-page-bg: var(--paper);
+  --doc-text: var(--ink);
+
+  --font-body: var(--font-ui);
+  --v32-radius: 0px; /* biennale 铁律:零圆角 */
+  --v32-gap: 0px;    /* biennale 用 hairline 而非 gap 分隔 */
+}
+
+/* ── biennale 排版工具类(照搬旧 t-* · block renderer 直接用)── */
+.t-display { font-family: var(--font-display); font-weight: 400; font-size: clamp(120px, min(14.6vw, 22vh), 240px); line-height: 0.86; letter-spacing: -0.018em; color: var(--ink); }
+.t-display-md { font-family: var(--font-display); font-weight: 400; font-size: clamp(80px, min(10vw, 16vh), 200px); line-height: 0.86; letter-spacing: -0.018em; color: var(--ink); }
+.t-display-it { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(56px, min(7vw, 11vh), 120px); line-height: 1.04; letter-spacing: -0.005em; color: var(--ink); }
+.t-numeral-md { font-family: var(--font-display); font-weight: 400; font-size: clamp(56px, min(6vw, 10vh), 120px); line-height: 0.92; letter-spacing: -0.01em; color: var(--ink); }
+.t-headline { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, min(4.6vw, 7vh), 88px); line-height: 1.06; letter-spacing: -0.005em; color: var(--ink); }
+.t-headline-sm { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, min(3.2vw, 5vh), 48px); line-height: 1.05; color: var(--ink); }
+.t-body-lede { font-family: var(--font-ui); font-weight: 400; font-size: clamp(15px, 1.05vw, 18px); line-height: 1.55; color: var(--ink); }
+.t-body { font-family: var(--font-ui); font-weight: 400; font-size: clamp(13px, 0.92vw, 16px); line-height: 1.6; color: var(--ink); }
+.t-label { font-family: var(--font-ui); font-weight: 600; font-size: clamp(11px, 0.78vw, 14px); line-height: 1; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink); }
+.t-label-tight { font-family: var(--font-ui); font-weight: 600; font-size: clamp(10px, 0.7vw, 13px); line-height: 1; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink); }
+.t-label-wide { font-family: var(--font-ui); font-weight: 600; font-size: clamp(11px, 0.78vw, 14px); line-height: 1; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink); }
+.t-meta-mono { font-family: var(--font-mono); font-weight: 500; font-size: clamp(11px, 0.78vw, 13px); line-height: 1; letter-spacing: 0.06em; color: var(--ink); }
+
+/* biennale 分隔件 */
+.by-hairline { height: 1px; background: var(--ink); border: none; }
+.by-kicker-rail { display: flex; align-items: center; gap: 18px; margin-bottom: 24px; }
+.by-kicker-rail .bar { width: 2px; height: 18px; background: var(--ink); flex: none; }
+
+/* sun-bloom 气氛层(present 舞台绝对定位)· 照搬旧模板 */
+.by-bloom { position: absolute; pointer-events: none; border-radius: 50%; z-index: 0;
+  background: radial-gradient(closest-side, var(--sun) 0%, color-mix(in oklab, var(--sun) 50%, transparent) 40%, transparent 70%); opacity: 0.7; }
+.by-bloom-tr { width: 46vw; height: 46vw; right: -12vw; top: -12vw; }
+.by-bloom-bl { width: 40vw; height: 40vw; left: -14vw; bottom: -14vw; }
+.by-ember { background: radial-gradient(closest-side, color-mix(in oklab, var(--ember) 60%, transparent) 0%, transparent 70%); opacity: 0.22; }
+
+/* ── 覆盖块(自定义 class · 由下面 block renderer 产出)────────── */
+.by-cover { position: relative; }
+.by-cover__display { margin: 0; }
+.by-cover__display .by-tail { display: block; margin-top: 0.14em; }
+.by-cover__lead { margin: 36px 0 0; max-width: 720px; }
+.by-cover__byline { display: flex; gap: 28px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--ink); }
+
+.by-statement { position: relative; }
+.by-statement__num { margin: 0 0 24px; }
+.by-statement__text { margin: 0; max-width: 20ch; }
+.by-statement__anno { margin-top: 40px; }
+
+.by-metrics__title { margin: 0 0 40px; }
+.by-metrics__grid { display: grid; gap: 0; border-bottom: 1px solid var(--ink); }
+.by-metric { display: flex; flex-direction: column; gap: 14px; padding: 40px 32px; border-top: 1px solid var(--ink); }
+.by-metric__value { margin: 0; display: flex; align-items: baseline; gap: 0.2em; }
+.by-metric__delta { font-family: var(--font-ui); font-size: 0.28em; }
+.by-metric[data-delta="up"] .by-metric__delta { color: var(--ink); }
+.by-metric[data-delta="down"] .by-metric__delta { color: var(--ember); }
+.by-metric__hint { opacity: 0.7; }
+
+.by-cards__title { margin: 0 0 40px; max-width: 1400px; }
+.by-cards__list { border-bottom: 1px solid var(--ink); }
+/* numbered / steps → 横排大条目;grid → 网格 */
+.by-card-row { display: grid; grid-template-columns: 80px 1fr 200px; gap: 28px; padding: 28px 0; border-top: 1px solid var(--ink); align-items: baseline; }
+.by-card-row__num { line-height: 0.9; }
+.by-card-row__head { margin: 0 0 12px; }
+.by-card-row__body { margin: 0; max-width: 720px; }
+.by-card-row__metric { text-align: right; }
+.by-card-row__metric-v { margin: 0; }
+.by-card-row__metric-l { margin-top: 8px; opacity: 0.7; }
+.by-cards__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; border-bottom: 1px solid var(--ink); }
+.by-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; border-top: 1px solid var(--ink); }
+.by-card__num { opacity: 0.6; }
+.by-card__head { margin: 0; }
+.by-card__body { margin: 0; opacity: 0.78; }
+
+.by-closing { background: var(--ink); color: var(--paper); position: relative; }
+.by-closing__display { color: var(--paper); margin: 0; }
+.by-closing__sub { color: color-mix(in oklab, var(--paper) 80%, transparent); margin-top: 32px; max-width: 800px; }
+.by-closing .by-kicker-rail .bar { background: var(--sun); }
+.by-closing .t-label { color: var(--paper); }
+.by-closing__cta { display: flex; gap: 24px; margin-top: 56px; }
+.by-cta { padding: 18px 32px; text-decoration: none; font-family: var(--font-ui); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 13px; display: inline-block; }
+.by-cta[data-kind="primary"] { background: var(--sun); color: var(--ink); }
+.by-cta[data-kind="secondary"] { border: 1px solid var(--paper); color: var(--paper); }
+
+/* ── 兜底块的 biennale 重绘(prose/heading/quote/callout/table/compare 等走兜底,
+     这里把它们从"素模板圆角卡片"拉回 biennale 的 serif + hairline + 无圆角)── */
+.v32-heading-text, .v32-cards-title, .v32-metrics-title, .v32-compare-title, .v32-table-title, .v32-seq-title, .v32-group-title { font-family: var(--font-display); font-weight: 400; }
+.v32-prose-body { font-family: var(--font-ui); }
+.v32-quote-text, .v32-media-quote blockquote { font-family: var(--font-display); font-style: italic; }
+.v32-callout, .v32-metric, .v32-card, .v32-compare-col { border-radius: 0; box-shadow: none; }
+.v32-kicker, .v32-cover-kicker { font-family: var(--font-ui); letter-spacing: 0.22em; }
+
+/* present 舞台:paper 底 + 大内边距(旧 slide-inner 是 76px)· 覆盖块自己撑满 */
+[data-v32-mode="present"] .v32-slide-inner { padding: 76px 76px 88px; }
+[data-v32-mode="present"] .by-cover__display { font-size: clamp(120px, 14vw, 240px); }
+[data-v32-mode="present"] .by-closing__display { font-size: clamp(80px, 10vw, 200px); }</style>
+</head>
+<body>
+<div class="deck-viewport">
+  <div class="deck-stage">
+    <section class="slide"><div class="v32-slide-inner"><section class="v32-block by-cover" data-block-id="d0">
+  <div class="by-bloom by-bloom-tr"></div>
+  <div class="by-bloom by-ember by-bloom-bl"></div>
+  <div class="by-kicker-rail"><div class="bar"></div><div class="t-label" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d0/kicker" data-plain-editable="true" data-plain-text-path="/blocks/d0/kicker" data-plain-label="封面眉标">Introducing Plain</div></div>
+  <h1 class="t-display by-cover__display" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d0/display" data-plain-editable="true" data-plain-text-path="/blocks/d0/display" data-plain-label="封面大标题">One source,<em class="t-display-it by-tail" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d0/displayTail" data-plain-editable="true" data-plain-text-path="/blocks/d0/displayTail" data-plain-label="标题续行">every view.</em></h1>
+  <p class="t-body-lede by-cover__lead" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d0/lead" data-plain-editable="true" data-plain-text-path="/blocks/d0/lead" data-plain-label="封面引子">A document system built for humans and AI agents. No hidden state. No drift. Everything you see is everything there is.</p>
+  <div class="by-cover__byline"><div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d0/byline/0" data-plain-editable="true" data-plain-text-path="/blocks/d0/byline/0" data-plain-label="署名">Plain — 2025</div></div>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block by-statement" data-block-id="d1">
+  <div class="by-bloom by-bloom-bl"></div>
+  <div class="t-display-md by-statement__num" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d1/bigNumber" data-plain-editable="true" data-plain-text-path="/blocks/d1/bigNumber" data-plain-label="大数字">1</div>
+  <p class="t-display-it by-statement__text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d1/text" data-plain-editable="true" data-plain-text-path="/blocks/d1/text" data-plain-label="论点">What if your deck, doc, and sheet were not three files, but three windows into the same document?</p>
+  <div class="t-label-wide by-statement__anno" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d1/annotation" data-plain-editable="true" data-plain-text-path="/blocks/d1/annotation" data-plain-label="注解">Today they are three formats, three parsers, three failure modes. Plain makes them one.</div>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block by-metrics" data-block-id="d2">
+  <div class="by-bloom by-ember by-bloom-tr" style="width:22vw;height:22vw;right:6vw;top:8vh;"></div>
+  <h2 class="t-headline by-metrics__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d2/title" data-plain-editable="true" data-plain-text-path="/blocks/d2/title" data-plain-label="指标组标题">The cost of format sprawl</h2>
+  <div class="by-metrics__grid" style="grid-template-columns: repeat(3, 1fr);"><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">3×</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d2/items/0/label" data-plain-editable="true" data-plain-text-path="/blocks/d2/items/0/label" data-plain-label="指标名">Files per project</div>
+      <div class="t-body by-metric__hint">doc + deck + sheet, each edited separately</div>
+    </div><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">74%</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d2/items/1/label" data-plain-editable="true" data-plain-text-path="/blocks/d2/items/1/label" data-plain-label="指标名">Of agent errors traced to format drift</div>
+      <div class="t-body by-metric__hint">from our 2025 pilot across 40 projects</div>
+    </div><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">6+</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d2/items/2/label" data-plain-editable="true" data-plain-text-path="/blocks/d2/items/2/label" data-plain-label="指标名">Formats an agent must parse</div>
+      <div class="t-body by-metric__hint">docx, pptx, xlsx, markdown, JSON, PDF…</div>
+    </div></div>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block by-cards" data-block-id="d3" data-layout="numbered">
+  <div class="by-kicker-rail"><div class="bar"></div><div class="t-label">The problem</div></div><h2 class="t-headline by-cards__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/title" data-plain-editable="true" data-plain-text-path="/blocks/d3/title" data-plain-label="卡片组标题">An agent that edits documents is only as reliable as its ground truth.</h2>
+  <div class="by-cards__list"><div class="by-card-row">
+      <div class="t-numeral-md by-card-row__num">01</div>
+      <div>
+        <div class="t-headline-sm by-card-row__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/0/head" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/0/head" data-plain-label="条目标题">Binary blobs hide meaning</div>
+        <div class="t-body by-card-row__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/0/body" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/0/body" data-plain-label="条目正文">An agent cannot see intent inside a .docx — it sees XML noise. Every edit is a guess mapped through a parser that was not built for reasoning.</div>
+      </div>
+      <div class="by-card-row__metric"><div class="t-numeral-md by-card-row__metric-v" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/0/metric" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/0/metric" data-plain-label="指标">0</div><div class="t-label-tight by-card-row__metric-l">visibility into structure</div></div>
+    </div><div class="by-card-row">
+      <div class="t-numeral-md by-card-row__num">02</div>
+      <div>
+        <div class="t-headline-sm by-card-row__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/1/head" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/1/head" data-plain-label="条目标题">Each view forks reality</div>
+        <div class="t-body by-card-row__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/1/body" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/1/body" data-plain-label="条目正文">The doc says one thing, the deck says another, the sheet says a third. Three sources of truth means three sources of lies.</div>
+      </div>
+      <div class="by-card-row__metric"><div class="t-numeral-md by-card-row__metric-v" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/1/metric" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/1/metric" data-plain-label="指标">3</div><div class="t-label-tight by-card-row__metric-l">competing states</div></div>
+    </div><div class="by-card-row">
+      <div class="t-numeral-md by-card-row__num">03</div>
+      <div>
+        <div class="t-headline-sm by-card-row__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/2/head" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/2/head" data-plain-label="条目标题">An agent&#39;s edit is a black box</div>
+        <div class="t-body by-card-row__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/2/body" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/2/body" data-plain-label="条目正文">Without a readable source, you cannot diff — you cannot trust. So the human re-reads everything, and the point of having an agent collapses.</div>
+      </div>
+      <div class="by-card-row__metric"><div class="t-numeral-md by-card-row__metric-v" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d3/items/2/metric" data-plain-editable="true" data-plain-text-path="/blocks/d3/items/2/metric" data-plain-label="指标">100%</div><div class="t-label-tight by-card-row__metric-l">human re-verification</div></div>
+    </div></div>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><figure class="v32-block v32-quote" data-block-id="d4">
+  <blockquote class="v32-quote-text" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d4/text" data-plain-editable="true" data-plain-text-path="/blocks/d4/text" data-plain-label="引语">A document an agent cannot read is a document an agent should not edit.</blockquote>
+  <figcaption class="v32-quote-attr" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d4/attribution" data-plain-editable="true" data-plain-text-path="/blocks/d4/attribution" data-plain-label="出处">— Plain engineering notes, 2025</figcaption>
+</figure></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block by-cards" data-block-id="d5" data-layout="steps">
+  <div class="by-kicker-rail"><div class="bar"></div><div class="t-label">The fix</div></div><h2 class="t-headline by-cards__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d5/title" data-plain-editable="true" data-plain-text-path="/blocks/d5/title" data-plain-label="卡片组标题">Plain text is the one format an agent can hold in its working memory.</h2>
+  <div class="by-cards__list"><div class="by-card-row">
+      <div class="t-numeral-md by-card-row__num">1</div>
+      <div>
+        <div class="t-headline-sm by-card-row__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d5/items/0/head" data-plain-editable="true" data-plain-text-path="/blocks/d5/items/0/head" data-plain-label="条目标题">No more parsers</div>
+        <div class="t-body by-card-row__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d5/items/0/body" data-plain-editable="true" data-plain-text-path="/blocks/d5/items/0/body" data-plain-label="条目正文">An agent reads a Plain file and sees exactly what a human sees — headings, cells, slides as typed structure. No speculation about what the file &#39;means&#39;.</div>
+      </div>
+      <div class="by-card-row__metric"></div>
+    </div><div class="by-card-row">
+      <div class="t-numeral-md by-card-row__num">2</div>
+      <div>
+        <div class="t-headline-sm by-card-row__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d5/items/1/head" data-plain-editable="true" data-plain-text-path="/blocks/d5/items/1/head" data-plain-label="条目标题">Diffs are honest</div>
+        <div class="t-body by-card-row__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d5/items/1/body" data-plain-editable="true" data-plain-text-path="/blocks/d5/items/1/body" data-plain-label="条目正文">A Plain source diffs line-by-line. The agent&#39;s edit is a visible, reviewable change — not a blob swap.</div>
+      </div>
+      <div class="by-card-row__metric"></div>
+    </div><div class="by-card-row">
+      <div class="t-numeral-md by-card-row__num">3</div>
+      <div>
+        <div class="t-headline-sm by-card-row__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d5/items/2/head" data-plain-editable="true" data-plain-text-path="/blocks/d5/items/2/head" data-plain-label="条目标题">Rendered views are derived</div>
+        <div class="t-body by-card-row__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d5/items/2/body" data-plain-editable="true" data-plain-text-path="/blocks/d5/items/2/body" data-plain-label="条目正文">Deck, doc, sheet are generated from the same source. Edit once, see it everywhere — with no sync step to forget.</div>
+      </div>
+      <div class="by-card-row__metric"></div>
+    </div></div>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block by-cards" data-block-id="d6" data-layout="grid">
+  <h2 class="t-headline by-cards__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d6/title" data-plain-editable="true" data-plain-text-path="/blocks/d6/title" data-plain-label="卡片组标题">One model, three views</h2>
+  <div class="by-cards__grid" style="grid-template-columns: repeat(2, 1fr);"><article class="by-card">
+      <div class="t-meta-mono by-card__num">D</div>
+      <div class="t-headline-sm by-card__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d6/items/0/head" data-plain-editable="true" data-plain-text-path="/blocks/d6/items/0/head" data-plain-label="卡片标题">Deck</div>
+      <div class="t-body by-card__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d6/items/0/body" data-plain-editable="true" data-plain-text-path="/blocks/d6/items/0/body" data-plain-label="卡片正文">Slides are sections with an order. The same Plain source can reflow into a doc&#39;s narrative outline.</div>
+    </article><article class="by-card">
+      <div class="t-meta-mono by-card__num">O</div>
+      <div class="t-headline-sm by-card__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d6/items/1/head" data-plain-editable="true" data-plain-text-path="/blocks/d6/items/1/head" data-plain-label="卡片标题">Doc</div>
+      <div class="t-body by-card__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d6/items/1/body" data-plain-editable="true" data-plain-text-path="/blocks/d6/items/1/body" data-plain-label="卡片正文">Prose is just content blocks. What renders as a slide in deck mode appears as a headed section here.</div>
+    </article><article class="by-card">
+      <div class="t-meta-mono by-card__num">S</div>
+      <div class="t-headline-sm by-card__head" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d6/items/2/head" data-plain-editable="true" data-plain-text-path="/blocks/d6/items/2/head" data-plain-label="卡片标题">Sheet</div>
+      <div class="t-body by-card__body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d6/items/2/body" data-plain-editable="true" data-plain-text-path="/blocks/d6/items/2/body" data-plain-label="卡片正文">Tabular blocks stay tabular. Formulas are plain-text expressions — readable by an agent, executable by a renderer.</div>
+    </article></div>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block v32-sequence" data-block-id="d7" data-flow="time">
+  <div class="v32-kicker">Under the hood</div><h3 class="v32-seq-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d7/title" data-plain-editable="true" data-plain-text-path="/blocks/d7/title" data-plain-label="序列标题">How Plain keeps views in sync</h3>
+  <ol class="v32-seq-list"><li class="v32-seq-item">
+      <div class="v32-seq-dot" aria-hidden="true"></div>
+      <div class="v32-seq-when">Edit</div>
+      <div class="v32-seq-label" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d7/items/0/label" data-plain-editable="true" data-plain-text-path="/blocks/d7/items/0/label" data-plain-label="序列节点">One edit to the Plain source</div>
+      <div class="v32-seq-hint">a cell changes, a heading moves, a list grows</div>
+    </li><li class="v32-seq-item">
+      <div class="v32-seq-dot" aria-hidden="true"></div>
+      <div class="v32-seq-when">Derive</div>
+      <div class="v32-seq-label" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d7/items/1/label" data-plain-editable="true" data-plain-text-path="/blocks/d7/items/1/label" data-plain-label="序列节点">Each view recomputes from source</div>
+      <div class="v32-seq-hint">no stored state in the view — only the source is authoritative</div>
+    </li><li class="v32-seq-item">
+      <div class="v32-seq-dot" aria-hidden="true"></div>
+      <div class="v32-seq-when">Verify</div>
+      <div class="v32-seq-label" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d7/items/2/label" data-plain-editable="true" data-plain-text-path="/blocks/d7/items/2/label" data-plain-label="序列节点">Diff shows exactly what changed</div>
+      <div class="v32-seq-hint">human or agent can inspect the line-level delta before accepting</div>
+    </li></ol>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block v32-compare" data-block-id="d8">
+  <h3 class="v32-compare-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d8/title" data-plain-editable="true" data-plain-text-path="/blocks/d8/title" data-plain-label="对比标题">Plain vs. traditional files</h3>
+  <div class="v32-compare-cols"><div class="v32-compare-col" data-side="left">
+      <div class="v32-compare-label" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d8/left/label" data-plain-editable="true" data-plain-text-path="/blocks/d8/left/label" data-plain-label="对比列标题">Traditional (docx + pptx + xlsx)</div>
+      <ul class="v32-compare-bullets"><li>Three separate files with separate formats</li><li>Agent must parse binary XML to reason</li><li>Edits are opaque — cannot trust without re-reading</li><li>Sync between views is manual and always late</li></ul>
+    </div><div class="v32-compare-col" data-side="right">
+      <div class="v32-compare-label" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d8/right/label" data-plain-editable="true" data-plain-text-path="/blocks/d8/right/label" data-plain-label="对比列标题">Plain</div>
+      <ul class="v32-compare-bullets"><li>One plain-text source file</li><li>Agent reads the same structure a human does</li><li>Every edit is a reviewable line-diff</li><li>Deck, doc, sheet are derived, never divergent</li></ul>
+    </div></div>
+</section></div></section>
+<section class="slide"><div class="v32-slide-inner"><section class="v32-block by-closing" data-block-id="d9">
+  <div class="by-kicker-rail"><div class="bar"></div><div class="t-label" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d9/kicker" data-plain-editable="true" data-plain-text-path="/blocks/d9/kicker" data-plain-label="结尾眉标">Next steps</div></div>
+  <h2 class="t-display-md by-closing__display" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d9/display" data-plain-editable="true" data-plain-text-path="/blocks/d9/display" data-plain-label="结尾大标题">Try Plain with one real document.</h2>
+  <p class="t-body-lede by-closing__sub" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/d9/sub" data-plain-editable="true" data-plain-text-path="/blocks/d9/sub" data-plain-label="结尾副文">Open a deck you care about. Watch an agent edit it — and read the diff. That is the whole pitch.</p>
+  <div class="by-closing__cta"><a class="by-cta" data-kind="primary" href="/start">Start a Pilot →</a><a class="by-cta" data-kind="secondary" href="/architecture">Read the Architecture</a></div>
+</section></div></section>
+    <div class="pagenum" aria-hidden="true">01 / 10</div>
+  </div>
+  <button class="deck-nav deck-nav-prev" aria-label="Previous" type="button">‹</button>
+  <button class="deck-nav deck-nav-next" aria-label="Next" type="button">›</button>
+  <button class="deck-mode-toggle" aria-label="Toggle view mode" type="button" title="Slides / scroll">☰ Scroll</button>
+</div>
+<script>(function() {
+  const stage = document.querySelector('.deck-stage');
+  const viewport = document.querySelector('.deck-viewport');
+  if (!stage || !viewport) return;
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let mode = 'deck'; // 'deck'(幻灯片) | 'scroll'(长页滚动)
+  let idx = 0;
+
+  // ── 幻灯片模式:整个 stage letterbox 缩放 ──
+  function fitDeck() {
+    const w = viewport.clientWidth, h = viewport.clientHeight;
+    const s = Math.min(w / 1920, h / 1080);
+    const tx = (w - 1920 * s) / 2;
+    const ty = (h - 1080 * s) / 2;
+    stage.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ')';
+  }
+  // ── 滚动模式:每个 slide 独立缩放占满视口宽 · stage 顺序流式 ──
+  // transform:scale 不改 layout box(slide 仍占 1920×1080)→ 用负 margin 把 layout
+  //   占位收缩到缩放后的真实视觉尺寸,消除右侧/底部空白。
+  function fitScroll() {
+    stage.style.transform = 'none';
+    const w = viewport.clientWidth;
+    const s = w / 1920;
+    const scaledH = 1080 * s;
+    slides.forEach((sl) => {
+      sl.style.transformOrigin = '0 0';
+      sl.style.transform = 'scale(' + s + ')';
+      // layout 盒原本 1920×1080 → 负 margin 收到 w×scaledH,后面 slide 才贴紧、不溢出
+      sl.style.marginRight = (w - 1920) + 'px';
+      sl.style.marginBottom = (scaledH - 1080) + 'px';
+    });
+  }
+  function fit() { if (mode === 'scroll') fitScroll(); else fitDeck(); }
+  window.addEventListener('resize', fit);
+
+  function show(i) {
+    var prev = idx;
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    var dir = idx >= prev ? 'next' : 'prev';
+    stage.setAttribute('data-dir', dir);
+    slides.forEach((s, k) => s.classList.toggle('active', k === idx));
+    const pn = document.querySelector('.pagenum');
+    if (pn) pn.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+    const prevBtn = document.querySelector('.deck-nav-prev');
+    const nextBtn = document.querySelector('.deck-nav-next');
+    if (prevBtn) prevBtn.disabled = idx === 0;
+    if (nextBtn) nextBtn.disabled = idx === slides.length - 1;
+    if (prev !== idx) {
+      try {
+        document.querySelectorAll('[data-plain-selected]').forEach(x => x.removeAttribute('data-plain-selected'));
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ source: 'plain-preview', type: 'select-cleared' }, '*');
+        }
+      } catch (e) {}
+    }
+  }
+
+  // ── 模式切换 ──
+  function setMode(m) {
+    if (m === mode) return;
+    mode = m;
+    const btn = document.querySelector('.deck-mode-toggle');
+    if (mode === 'scroll') {
+      viewport.classList.add('scroll-mode');
+      slides.forEach((s) => s.classList.add('active')); // 全部可见
+      if (btn) btn.textContent = '⊞ Slides';
+      fitScroll();
+      // 滚到当前页
+      var cur = slides[idx];
+      if (cur) cur.scrollIntoView({ block: 'start' });
+    } else {
+      viewport.classList.remove('scroll-mode');
+      slides.forEach((s) => { s.style.transform = ''; s.style.marginBottom = ''; s.style.marginRight = ''; });
+      if (btn) btn.textContent = '☰ Scroll';
+      fitDeck();
+      show(idx);
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (mode === 'scroll') return; // 滚动模式交给浏览器原生滚动
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(idx + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(idx - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); show(0); }
+    else if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  });
+  // 滚轮翻页(仅幻灯片模式 · 滚动模式走原生滚动)
+  let wheelAcc = 0, wheelLock = false;
+  viewport.addEventListener('wheel', (e) => {
+    if (mode === 'scroll') return;
+    e.preventDefault();
+    if (wheelLock) return;
+    wheelAcc += e.deltaY;
+    if (Math.abs(wheelAcc) < 40) return;
+    show(idx + (wheelAcc > 0 ? 1 : -1));
+    wheelAcc = 0;
+    wheelLock = true;
+    setTimeout(() => { wheelLock = false; }, 550);
+  }, { passive: false });
+  // 滚动模式:同步当前页号(滚到哪页更新 pagenum)
+  viewport.addEventListener('scroll', () => {
+    if (mode !== 'scroll') return;
+    var mid = viewport.scrollTop + viewport.clientHeight / 2;
+    var acc = 0;
+    for (var k = 0; k < slides.length; k++) {
+      var h = slides[k].getBoundingClientRect().height;
+      if (mid >= acc && mid < acc + h) { idx = k; break; }
+      acc += h;
+    }
+    var pn = document.querySelector('.pagenum');
+    if (pn) pn.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+  }, { passive: true });
+
+  const prevBtn = document.querySelector('.deck-nav-prev');
+  const nextBtn = document.querySelector('.deck-nav-next');
+  if (prevBtn) prevBtn.addEventListener('click', () => show(idx - 1));
+  if (nextBtn) nextBtn.addEventListener('click', () => show(idx + 1));
+  const modeBtn = document.querySelector('.deck-mode-toggle');
+  if (modeBtn) modeBtn.addEventListener('click', () => setMode(mode === 'deck' ? 'scroll' : 'deck'));
+
+  try { if (stage) stage.classList.add('anim-ready'); } catch(e) {}
+  fitDeck();
+  show(0);
+})();</script>
+
+</body>
+</html>

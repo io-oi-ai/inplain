@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" data-plain-template="biennale-yellow" data-plain-kind="report" data-v32-mode="report">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Q3 Document Work · Distributed Across Decks, Docs &amp; Dashboards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html {
+  /* 长页滚动质感(零依赖):锚点平滑跳转 + iOS 惯性 + 边界回弹收敛 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-padding-top: 24px;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html, body { margin: 0; padding: 0; background: var(--doc-page-bg, var(--slide-bg, #fff)); color: var(--doc-text, #1a1a1a); }
+body { min-height: 100vh; }
+.doc-page { width: 100%; min-height: 100vh; padding: 80px 24px 120px; box-sizing: border-box; }
+.doc-article { max-width: 720px; margin: 0 auto; }
+.doc-article > * + * { margin-top: 24px; }
+@media print {
+  html, body { background: #fff; }
+  .doc-page { padding: 48px 24px; }
+}</style>
+<style>:root {
+  /* 颜色 token · fallback 到中性值(独立打开也不裸)· 生产环境吃全局 --plain-* */
+  --plain-bg: var(--plain-bg, #ffffff);
+  --plain-surface: var(--plain-surface, #f7f7f8);
+  --plain-surface-2: var(--plain-surface-2, #efeff1);
+  --plain-text: var(--plain-text, #1a1a1a);
+  --plain-text-mute: var(--plain-text-mute, #55555c);
+  --plain-text-faint: var(--plain-text-faint, #8a8a92);
+  --plain-border: var(--plain-border, #e2e2e6);
+  --plain-border-strong: var(--plain-border-strong, #c8c8cf);
+  --plain-accent: var(--plain-accent, #3b5bdb);
+  --plain-accent-strong: var(--plain-accent-strong, #2f49b0);
+  --plain-accent-bg: var(--plain-accent-bg, #eef1fd);
+  --plain-success: var(--plain-success, #2f9e44);
+  --plain-warn: var(--plain-warn, #e8590c);
+  --plain-danger: var(--plain-danger, #e03131);
+  --plain-danger-bg: var(--plain-danger-bg, #fff0f0);
+
+  /* 舞台颜色映射(letterbox 用) */
+  --stage-bg: var(--plain-surface-2);
+  --slide-bg: var(--plain-bg);
+  --doc-page-bg: var(--plain-bg);
+  --doc-text: var(--plain-text);
+
+  /* 排版尺度(相对 · 不写死 px 字号) */
+  --v32-scale: 1;
+  --v32-gap: 1.5rem;
+  --v32-radius: 12px;
+  --v32-maxw: 760px;
+  font-family: var(--font-body, system-ui, -apple-system, "Segoe UI", sans-serif);
+}
+
+.v32-block { color: var(--plain-text); box-sizing: border-box; }
+.v32-block * { box-sizing: border-box; }
+.v32-kicker { font-size: 0.75em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--plain-accent); font-weight: 600; margin-bottom: 0.5em; }
+
+/* cover / closing */
+.v32-cover, .v32-closing { text-align: left; }
+.v32-cover-kicker { font-size: 0.85em; letter-spacing: 0.1em; text-transform: uppercase; color: var(--plain-accent); font-weight: 600; margin-bottom: 0.75em; }
+.v32-cover-display, .v32-closing-display { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; font-weight: 800; color: var(--plain-text); margin: 0; letter-spacing: -0.02em; }
+.v32-cover-tail { color: var(--plain-accent); }
+.v32-cover-lead, .v32-closing-sub { font-size: 1.15em; color: var(--plain-text-mute); margin-top: 0.75em; max-width: 42ch; }
+.v32-cover-byline { display: flex; gap: 1em; margin-top: 1.25em; color: var(--plain-text-faint); font-size: 0.9em; }
+.v32-closing-cta { display: flex; gap: 0.75em; margin-top: 1.5em; }
+.v32-cta { display: inline-flex; align-items: center; padding: 0.7em 1.4em; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 0.95em; }
+.v32-cta[data-kind="primary"] { background: var(--plain-accent); color: var(--plain-bg); }
+.v32-cta[data-kind="secondary"] { background: transparent; color: var(--plain-accent); border: 1px solid var(--plain-border-strong); }
+
+/* statement */
+.v32-statement-num { font-size: clamp(3rem, 8vw, 5rem); font-weight: 800; color: var(--plain-accent); line-height: 1; letter-spacing: -0.03em; }
+.v32-statement-text { font-size: 1.4em; font-weight: 600; color: var(--plain-text); margin: 0.4em 0 0; max-width: 32ch; }
+.v32-statement-anno { color: var(--plain-text-mute); margin-top: 0.6em; font-size: 0.95em; }
+
+/* prose */
+.v32-prose-body { color: var(--plain-text); line-height: 1.7; }
+.v32-prose-body h1,.v32-prose-body h2,.v32-prose-body h3 { color: var(--plain-text); line-height: 1.25; margin: 1.2em 0 0.4em; }
+.v32-prose-body p { margin: 0 0 0.9em; }
+.v32-prose-body ul,.v32-prose-body ol { margin: 0 0 0.9em; padding-left: 1.4em; }
+.v32-prose-body li { margin: 0.25em 0; }
+.v32-prose-body a { color: var(--plain-accent); }
+.v32-prose-body code { background: var(--plain-surface-2); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+.v32-prose[data-tone="warn"] { border-left: 3px solid var(--plain-warn); padding-left: 1em; }
+.v32-prose[data-tone="danger"] { border-left: 3px solid var(--plain-danger); padding-left: 1em; }
+.v32-prose[data-tone="ok"] { border-left: 3px solid var(--plain-success); padding-left: 1em; }
+
+/* heading */
+.v32-heading-text { color: var(--plain-text); font-weight: 700; margin: 0; line-height: 1.2; }
+.v32-heading[data-level="1"] .v32-heading-text { font-size: 2rem; }
+.v32-heading[data-level="2"] .v32-heading-text { font-size: 1.6rem; }
+.v32-heading[data-level="3"] .v32-heading-text { font-size: 1.3rem; }
+.v32-heading[data-level="4"] .v32-heading-text { font-size: 1.1rem; color: var(--plain-text-mute); }
+
+/* quote */
+.v32-quote { margin: 0; }
+.v32-quote-text { font-size: 1.4em; font-weight: 500; font-style: italic; color: var(--plain-text); margin: 0; border-left: 3px solid var(--plain-accent); padding-left: 0.8em; line-height: 1.4; }
+.v32-quote-attr { color: var(--plain-text-mute); margin-top: 0.6em; font-size: 0.95em; }
+
+/* callout */
+.v32-callout { border-radius: var(--v32-radius); padding: 1em 1.2em; border: 1px solid var(--plain-border); background: var(--plain-surface); }
+.v32-callout[data-tone="info"], .v32-callout[data-tone="note"] { border-color: var(--plain-accent); background: var(--plain-accent-bg); }
+.v32-callout[data-tone="ok"] { border-color: var(--plain-success); }
+.v32-callout[data-tone="tip"] { border-color: var(--plain-success); }
+.v32-callout[data-tone="warn"] { border-color: var(--plain-warn); }
+.v32-callout[data-tone="danger"] { border-color: var(--plain-danger); background: var(--plain-danger-bg); }
+.v32-callout-title { font-weight: 700; color: var(--plain-text); margin-bottom: 0.3em; }
+.v32-callout-body { color: var(--plain-text); line-height: 1.6; }
+.v32-callout-body p:last-child { margin-bottom: 0; }
+
+/* metrics */
+.v32-metrics-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--v32-gap); }
+.v32-metric { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.1em; }
+.v32-metric-value { font-size: 2rem; font-weight: 800; color: var(--plain-text); letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 0.25em; }
+.v32-metric-label { color: var(--plain-text-mute); margin-top: 0.25em; font-size: 0.95em; }
+.v32-metric-hint { color: var(--plain-text-faint); font-size: 0.8em; margin-top: 0.15em; }
+.v32-delta { font-size: 0.6em; }
+.v32-metric[data-delta="up"] .v32-delta { color: var(--plain-success); }
+.v32-metric[data-delta="down"] .v32-delta { color: var(--plain-danger); }
+.v32-metric[data-delta="flat"] .v32-delta { color: var(--plain-text-faint); }
+
+/* cards */
+.v32-cards-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--v32-gap); }
+.v32-cards[data-layout="steps"] .v32-cards-grid, .v32-cards[data-layout="numbered"] .v32-cards-grid { grid-template-columns: 1fr; }
+.v32-card { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.25em; position: relative; }
+.v32-card-num { font-size: 1.6em; font-weight: 800; color: var(--plain-accent); opacity: 0.5; }
+.v32-card-icon { font-size: 1.6em; }
+.v32-card-head { font-size: 1.05em; color: var(--plain-text); margin: 0.3em 0 0.4em; }
+.v32-card-body { color: var(--plain-text-mute); margin: 0; line-height: 1.55; font-size: 0.95em; }
+.v32-card-when { color: var(--plain-text-faint); font-size: 0.85em; margin-top: 0.5em; }
+.v32-card-metric { margin-top: 0.6em; }
+.v32-card-metric-v { font-weight: 800; color: var(--plain-accent); font-size: 1.2em; }
+.v32-card-metric-l { color: var(--plain-text-mute); font-size: 0.85em; margin-left: 0.4em; }
+
+/* sequence */
+.v32-seq-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-seq-list { list-style: none; margin: 0; padding: 0; }
+.v32-seq-item { position: relative; padding-left: 1.6em; padding-bottom: 1.1em; border-left: 2px solid var(--plain-border); }
+.v32-seq-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+.v32-seq-dot { position: absolute; left: -6px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--plain-accent); }
+.v32-seq-when { color: var(--plain-text-faint); font-size: 0.8em; letter-spacing: 0.04em; }
+.v32-seq-label { color: var(--plain-text); font-weight: 600; }
+.v32-seq-hint { color: var(--plain-text-mute); font-size: 0.9em; margin-top: 0.15em; }
+.v32-sequence[data-flow="arrow"] .v32-seq-item { border-left-style: dashed; }
+
+/* compare */
+.v32-compare-title { font-size: 1.4em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--v32-gap); }
+.v32-compare-col { background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); padding: 1.25em; }
+.v32-compare-col[data-side="right"] { border-color: var(--plain-accent); }
+.v32-compare-label { font-weight: 700; color: var(--plain-text); margin-bottom: 0.5em; }
+.v32-compare-bullets { margin: 0; padding-left: 1.2em; color: var(--plain-text-mute); }
+.v32-compare-bullets li { margin: 0.3em 0; }
+
+/* quadrant */
+.v32-quad-plot { position: relative; width: 100%; aspect-ratio: 16/10; background: var(--plain-surface); border: 1px solid var(--plain-border); border-radius: var(--v32-radius); }
+.v32-quad-axis-x { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--plain-border-strong); }
+.v32-quad-axis-y { position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed var(--plain-border-strong); }
+.v32-quad-q { position: absolute; font-size: 0.8em; color: var(--plain-text-faint); padding: 0.5em; }
+.v32-quad-q[data-q="tl"] { top: 0; left: 0; }
+.v32-quad-q[data-q="tr"] { top: 0; right: 0; }
+.v32-quad-q[data-q="bl"] { bottom: 0; left: 0; }
+.v32-quad-q[data-q="br"] { bottom: 0; right: 0; }
+.v32-quad-point { position: absolute; transform: translate(-50%, 50%); display: flex; align-items: center; gap: 0.4em; }
+.v32-quad-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--plain-accent); display: inline-block; }
+.v32-quad-point[data-focal="true"] .v32-quad-dot { background: var(--plain-danger); width: 16px; height: 16px; }
+.v32-quad-plabel { font-size: 0.8em; color: var(--plain-text); white-space: nowrap; }
+.v32-quad-xlabel { position: absolute; bottom: -1.6em; left: 50%; transform: translateX(-50%); font-size: 0.8em; color: var(--plain-text-mute); }
+.v32-quad-ylabel { position: absolute; left: -1.6em; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 0.8em; color: var(--plain-text-mute); }
+
+/* table */
+.v32-table-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-table-scroll { overflow-x: auto; }
+.v32-table-el { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+.v32-table-el th, .v32-table-el td { text-align: left; padding: 0.6em 0.8em; border-bottom: 1px solid var(--plain-border); color: var(--plain-text); }
+.v32-table-el th { color: var(--plain-text-mute); font-weight: 700; border-bottom: 2px solid var(--plain-border-strong); }
+
+/* chart · SVG 用 currentColor → 这里给容器 color=accent,轴/文字降透明度 */
+.v32-chart-title { font-size: 1.2em; color: var(--plain-text); margin: 0 0 0.5em; }
+.v32-chart-svg { color: var(--plain-accent); max-width: 100%; }
+.v32-chart-svg svg { max-width: 100%; height: auto; }
+.v32-chart-caption { color: var(--plain-text-mute); font-size: 0.85em; margin-top: 0.4em; }
+
+/* media */
+.v32-media { display: grid; grid-template-columns: 1fr 1fr; gap: var(--v32-gap); align-items: center; }
+.v32-media[data-side="left"] { direction: rtl; }
+.v32-media[data-side="left"] > * { direction: ltr; }
+.v32-media-title { font-size: 1.5em; color: var(--plain-text); margin: 0.2em 0 0.4em; }
+.v32-media-body { color: var(--plain-text-mute); line-height: 1.6; }
+.v32-media-img { width: 100%; border-radius: var(--v32-radius); display: block; }
+.v32-media-ph { width: 100%; aspect-ratio: 4/3; background: var(--plain-surface-2); border-radius: var(--v32-radius); }
+.v32-media-quote blockquote { font-size: 1.3em; font-style: italic; color: var(--plain-text); margin: 0; }
+.v32-media-quote figcaption { color: var(--plain-text-mute); margin-top: 0.5em; }
+
+/* group */
+.v32-group-title { font-size: 1.3em; color: var(--plain-text); margin: 0 0 0.75em; }
+.v32-group-inner { display: flex; gap: var(--v32-gap); }
+.v32-group-inner[data-layout="row"] { flex-direction: row; flex-wrap: wrap; }
+.v32-group-inner[data-layout="stack"] { flex-direction: column; }
+.v32-group-inner > .v32-block { flex: 1 1 0; min-width: 0; }
+.v32-group-inner > .v32-block[data-span="half"] { flex: 1 1 45%; }
+.v32-group-inner > .v32-block[data-span="third"] { flex: 1 1 30%; }
+.v32-group-inner > .v32-block[data-span="full"] { flex: 1 1 100%; }
+
+/* span(顶层 report 流) */
+.v32-flow > .v32-block[data-span="half"] { max-width: 50%; }
+.v32-flow > .v32-block[data-span="third"] { max-width: 33%; }</style>
+<style>.v32-flow { max-width: var(--v32-maxw); margin: 0 auto; }
+.v32-flow > * + * { margin-top: 2.5rem; }</style>
+<style>:root {
+  /* ── biennale 原 token(照搬旧模板 :root)── */
+  --paper: #E9E5DB;
+  --paper-deep: #DCD6C4;
+  --sun: #F1EE2E;
+  --sun-soft: #F8F39B;
+  --haze: #F0DA7C;
+  --ink: #1B2566;
+  --ember: #E26B4A;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Archivo', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+  /* ── 把 biennale 色映射到 --plain-* token,让"没覆盖的兜底块"自动获得 biennale 底色 ──
+     WCAG AA:ink(#1B2566) on paper(#E9E5DB) 对比≈10:1;mute 用 ink 混 paper 仍 ≥4.5:1 */
+  --plain-bg: var(--paper);
+  --plain-surface: var(--paper);
+  --plain-surface-2: var(--paper-deep);
+  --plain-text: var(--ink);
+  --plain-text-mute: color-mix(in oklab, var(--ink) 78%, var(--paper));
+  --plain-text-faint: color-mix(in oklab, var(--ink) 62%, var(--paper));
+  --plain-border: var(--ink);
+  --plain-border-strong: var(--ink);
+  --plain-accent: var(--ink);
+  --plain-accent-strong: var(--ink);
+  --plain-accent-bg: color-mix(in oklab, var(--sun) 30%, var(--paper) 70%);
+  --plain-success: var(--ink);
+  --plain-warn: var(--ember);
+  --plain-danger: var(--ember);
+  --plain-danger-bg: color-mix(in oklab, var(--ember) 14%, var(--paper) 86%);
+
+  --stage-bg: #1a1a1a;
+  --slide-bg: var(--paper);
+  --doc-page-bg: var(--paper);
+  --doc-text: var(--ink);
+
+  --font-body: var(--font-ui);
+  --v32-radius: 0px; /* biennale 铁律:零圆角 */
+  --v32-gap: 0px;    /* biennale 用 hairline 而非 gap 分隔 */
+}
+
+/* ── biennale 排版工具类(照搬旧 t-* · block renderer 直接用)── */
+.t-display { font-family: var(--font-display); font-weight: 400; font-size: clamp(120px, min(14.6vw, 22vh), 240px); line-height: 0.86; letter-spacing: -0.018em; color: var(--ink); }
+.t-display-md { font-family: var(--font-display); font-weight: 400; font-size: clamp(80px, min(10vw, 16vh), 200px); line-height: 0.86; letter-spacing: -0.018em; color: var(--ink); }
+.t-display-it { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(56px, min(7vw, 11vh), 120px); line-height: 1.04; letter-spacing: -0.005em; color: var(--ink); }
+.t-numeral-md { font-family: var(--font-display); font-weight: 400; font-size: clamp(56px, min(6vw, 10vh), 120px); line-height: 0.92; letter-spacing: -0.01em; color: var(--ink); }
+.t-headline { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, min(4.6vw, 7vh), 88px); line-height: 1.06; letter-spacing: -0.005em; color: var(--ink); }
+.t-headline-sm { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, min(3.2vw, 5vh), 48px); line-height: 1.05; color: var(--ink); }
+.t-body-lede { font-family: var(--font-ui); font-weight: 400; font-size: clamp(15px, 1.05vw, 18px); line-height: 1.55; color: var(--ink); }
+.t-body { font-family: var(--font-ui); font-weight: 400; font-size: clamp(13px, 0.92vw, 16px); line-height: 1.6; color: var(--ink); }
+.t-label { font-family: var(--font-ui); font-weight: 600; font-size: clamp(11px, 0.78vw, 14px); line-height: 1; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink); }
+.t-label-tight { font-family: var(--font-ui); font-weight: 600; font-size: clamp(10px, 0.7vw, 13px); line-height: 1; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink); }
+.t-label-wide { font-family: var(--font-ui); font-weight: 600; font-size: clamp(11px, 0.78vw, 14px); line-height: 1; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink); }
+.t-meta-mono { font-family: var(--font-mono); font-weight: 500; font-size: clamp(11px, 0.78vw, 13px); line-height: 1; letter-spacing: 0.06em; color: var(--ink); }
+
+/* biennale 分隔件 */
+.by-hairline { height: 1px; background: var(--ink); border: none; }
+.by-kicker-rail { display: flex; align-items: center; gap: 18px; margin-bottom: 24px; }
+.by-kicker-rail .bar { width: 2px; height: 18px; background: var(--ink); flex: none; }
+
+/* sun-bloom 气氛层(present 舞台绝对定位)· 照搬旧模板 */
+.by-bloom { position: absolute; pointer-events: none; border-radius: 50%; z-index: 0;
+  background: radial-gradient(closest-side, var(--sun) 0%, color-mix(in oklab, var(--sun) 50%, transparent) 40%, transparent 70%); opacity: 0.7; }
+.by-bloom-tr { width: 46vw; height: 46vw; right: -12vw; top: -12vw; }
+.by-bloom-bl { width: 40vw; height: 40vw; left: -14vw; bottom: -14vw; }
+.by-ember { background: radial-gradient(closest-side, color-mix(in oklab, var(--ember) 60%, transparent) 0%, transparent 70%); opacity: 0.22; }
+
+/* ── 覆盖块(自定义 class · 由下面 block renderer 产出)────────── */
+.by-cover { position: relative; }
+.by-cover__display { margin: 0; }
+.by-cover__display .by-tail { display: block; margin-top: 0.14em; }
+.by-cover__lead { margin: 36px 0 0; max-width: 720px; }
+.by-cover__byline { display: flex; gap: 28px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--ink); }
+
+.by-statement { position: relative; }
+.by-statement__num { margin: 0 0 24px; }
+.by-statement__text { margin: 0; max-width: 20ch; }
+.by-statement__anno { margin-top: 40px; }
+
+.by-metrics__title { margin: 0 0 40px; }
+.by-metrics__grid { display: grid; gap: 0; border-bottom: 1px solid var(--ink); }
+.by-metric { display: flex; flex-direction: column; gap: 14px; padding: 40px 32px; border-top: 1px solid var(--ink); }
+.by-metric__value { margin: 0; display: flex; align-items: baseline; gap: 0.2em; }
+.by-metric__delta { font-family: var(--font-ui); font-size: 0.28em; }
+.by-metric[data-delta="up"] .by-metric__delta { color: var(--ink); }
+.by-metric[data-delta="down"] .by-metric__delta { color: var(--ember); }
+.by-metric__hint { opacity: 0.7; }
+
+.by-cards__title { margin: 0 0 40px; max-width: 1400px; }
+.by-cards__list { border-bottom: 1px solid var(--ink); }
+/* numbered / steps → 横排大条目;grid → 网格 */
+.by-card-row { display: grid; grid-template-columns: 80px 1fr 200px; gap: 28px; padding: 28px 0; border-top: 1px solid var(--ink); align-items: baseline; }
+.by-card-row__num { line-height: 0.9; }
+.by-card-row__head { margin: 0 0 12px; }
+.by-card-row__body { margin: 0; max-width: 720px; }
+.by-card-row__metric { text-align: right; }
+.by-card-row__metric-v { margin: 0; }
+.by-card-row__metric-l { margin-top: 8px; opacity: 0.7; }
+.by-cards__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; border-bottom: 1px solid var(--ink); }
+.by-card { display: flex; flex-direction: column; gap: 12px; padding: 24px; border-top: 1px solid var(--ink); }
+.by-card__num { opacity: 0.6; }
+.by-card__head { margin: 0; }
+.by-card__body { margin: 0; opacity: 0.78; }
+
+.by-closing { background: var(--ink); color: var(--paper); position: relative; }
+.by-closing__display { color: var(--paper); margin: 0; }
+.by-closing__sub { color: color-mix(in oklab, var(--paper) 80%, transparent); margin-top: 32px; max-width: 800px; }
+.by-closing .by-kicker-rail .bar { background: var(--sun); }
+.by-closing .t-label { color: var(--paper); }
+.by-closing__cta { display: flex; gap: 24px; margin-top: 56px; }
+.by-cta { padding: 18px 32px; text-decoration: none; font-family: var(--font-ui); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 13px; display: inline-block; }
+.by-cta[data-kind="primary"] { background: var(--sun); color: var(--ink); }
+.by-cta[data-kind="secondary"] { border: 1px solid var(--paper); color: var(--paper); }
+
+/* ── 兜底块的 biennale 重绘(prose/heading/quote/callout/table/compare 等走兜底,
+     这里把它们从"素模板圆角卡片"拉回 biennale 的 serif + hairline + 无圆角)── */
+.v32-heading-text, .v32-cards-title, .v32-metrics-title, .v32-compare-title, .v32-table-title, .v32-seq-title, .v32-group-title { font-family: var(--font-display); font-weight: 400; }
+.v32-prose-body { font-family: var(--font-ui); }
+.v32-quote-text, .v32-media-quote blockquote { font-family: var(--font-display); font-style: italic; }
+.v32-callout, .v32-metric, .v32-card, .v32-compare-col { border-radius: 0; box-shadow: none; }
+.v32-kicker, .v32-cover-kicker { font-family: var(--font-ui); letter-spacing: 0.22em; }
+
+/* present 舞台:paper 底 + 大内边距(旧 slide-inner 是 76px)· 覆盖块自己撑满 */
+[data-v32-mode="present"] .v32-slide-inner { padding: 76px 76px 88px; }
+[data-v32-mode="present"] .by-cover__display { font-size: clamp(120px, 14vw, 240px); }
+[data-v32-mode="present"] .by-closing__display { font-size: clamp(80px, 10vw, 200px); }</style>
+</head>
+<body>
+<main class="doc-page"><article class="doc-article v32-flow"><section class="v32-block v32-group" data-block-id="r0" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r0/title" data-plain-editable="true" data-plain-text-path="/blocks/r0/title" data-plain-label="组标题">cover</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-prose" data-block-id="p0_0">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p0_0/body" data-plain-label="正文"><p>Over the third quarter, our team produced and maintained a body of knowledge spread across three primary formats. Decks carried the narrative, docs held the thinking, dashboards tracked the pulse. This dashboard dissects that output — volume, rhythm, collaboration and drift.</p>
+</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r1" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r1/title" data-plain-editable="true" data-plain-text-path="/blocks/r1/title" data-plain-label="组标题">overview</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block by-metrics" data-block-id="p1_0">
+  <div class="by-bloom by-ember by-bloom-tr" style="width:22vw;height:22vw;right:6vw;top:8vh;"></div>
+  <h2 class="t-headline by-metrics__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p1_0/title" data-plain-label="指标组标题">Total documents</h2>
+  <div class="by-metrics__grid" style="grid-template-columns: repeat(1, 1fr);"><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">213</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_0/items/0/label" data-plain-editable="true" data-plain-text-path="/blocks/p1_0/items/0/label" data-plain-label="指标名">Total documents</div>
+      <div class="t-body by-metric__hint">across all formats</div>
+    </div></div>
+</section>
+<section class="v32-block by-metrics" data-block-id="p1_1">
+  <div class="by-bloom by-ember by-bloom-tr" style="width:22vw;height:22vw;right:6vw;top:8vh;"></div>
+  <h2 class="t-headline by-metrics__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_1/title" data-plain-editable="true" data-plain-text-path="/blocks/p1_1/title" data-plain-label="指标组标题">Decks created</h2>
+  <div class="by-metrics__grid" style="grid-template-columns: repeat(1, 1fr);"><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">74</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_1/items/0/label" data-plain-editable="true" data-plain-text-path="/blocks/p1_1/items/0/label" data-plain-label="指标名">Decks created</div>
+      <div class="t-body by-metric__hint">usually pitch &amp; review</div>
+    </div></div>
+</section>
+<section class="v32-block by-metrics" data-block-id="p1_2">
+  <div class="by-bloom by-ember by-bloom-tr" style="width:22vw;height:22vw;right:6vw;top:8vh;"></div>
+  <h2 class="t-headline by-metrics__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_2/title" data-plain-editable="true" data-plain-text-path="/blocks/p1_2/title" data-plain-label="指标组标题">Docs edited</h2>
+  <div class="by-metrics__grid" style="grid-template-columns: repeat(1, 1fr);"><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">89</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_2/items/0/label" data-plain-editable="true" data-plain-text-path="/blocks/p1_2/items/0/label" data-plain-label="指标名">Docs edited</div>
+      <div class="t-body by-metric__hint">long-form and specs</div>
+    </div></div>
+</section>
+<section class="v32-block by-metrics" data-block-id="p1_3">
+  <div class="by-bloom by-ember by-bloom-tr" style="width:22vw;height:22vw;right:6vw;top:8vh;"></div>
+  <h2 class="t-headline by-metrics__title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_3/title" data-plain-editable="true" data-plain-text-path="/blocks/p1_3/title" data-plain-label="指标组标题">Dashboards built</h2>
+  <div class="by-metrics__grid" style="grid-template-columns: repeat(1, 1fr);"><div class="by-metric" data-delta="flat">
+      <div class="t-numeral-md by-metric__value">50</div>
+      <div class="t-label-tight" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p1_3/items/0/label" data-plain-editable="true" data-plain-text-path="/blocks/p1_3/items/0/label" data-plain-label="指标名">Dashboards built</div>
+      <div class="t-body by-metric__hint">trackers and metrics</div>
+    </div></div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r2" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r2/title" data-plain-editable="true" data-plain-text-path="/blocks/r2/title" data-plain-label="组标题">weekly volume</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-chart" data-block-id="p2_0">
+  <h3 class="v32-chart-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p2_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p2_0/title" data-plain-label="图表标题">Weekly document production</h3>
+  <div class="v32-chart-svg" role="img" aria-label="Weekly document production"><svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+    <line x1="44" y1="12" x2="44" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+    <line x1="44" y1="332" x2="624" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <text x="38" y="335" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">0</text><text x="38" y="175" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">7</text><text x="38" y="15" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">13</text><polygon points="44,332 44,208.9230769230769 92.33333333333333,159.6923076923077 140.66666666666666,184.3076923076923 189,135.07692307692307 237.33333333333331,110.46153846153845 285.6666666666667,233.53846153846155 334,184.3076923076923 382.33333333333337,85.84615384615384 430.66666666666663,135.07692307692307 479,159.6923076923077 527.3333333333334,110.46153846153845 575.6666666666666,208.9230769230769 624,184.3076923076923 624,332" fill="currentColor" opacity="0.18"/><polyline class="pl-line" points="44,208.9230769230769 92.33333333333333,159.6923076923077 140.66666666666666,184.3076923076923 189,135.07692307692307 237.33333333333331,110.46153846153845 285.6666666666667,233.53846153846155 334,184.3076923076923 382.33333333333337,85.84615384615384 430.66666666666663,135.07692307692307 479,159.6923076923077 527.3333333333334,110.46153846153845 575.6666666666666,208.9230769230769 624,184.3076923076923" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="1"/><circle class="pl-dot" data-v="5" data-label="W1" data-series="Decks" cx="44" cy="208.9230769230769" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="7" data-label="W2" data-series="Decks" cx="92.33333333333333" cy="159.6923076923077" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="6" data-label="W3" data-series="Decks" cx="140.66666666666666" cy="184.3076923076923" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="8" data-label="W4" data-series="Decks" cx="189" cy="135.07692307692307" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="9" data-label="W5" data-series="Decks" cx="237.33333333333331" cy="110.46153846153845" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="4" data-label="W6" data-series="Decks" cx="285.6666666666667" cy="233.53846153846155" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="6" data-label="W7" data-series="Decks" cx="334" cy="184.3076923076923" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="10" data-label="W8" data-series="Decks" cx="382.33333333333337" cy="85.84615384615384" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="8" data-label="W9" data-series="Decks" cx="430.66666666666663" cy="135.07692307692307" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="7" data-label="W10" data-series="Decks" cx="479" cy="159.6923076923077" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="9" data-label="W11" data-series="Decks" cx="527.3333333333334" cy="110.46153846153845" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="5" data-label="W12" data-series="Decks" cx="575.6666666666666" cy="208.9230769230769" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="6" data-label="W13" data-series="Decks" cx="624" cy="184.3076923076923" r="3" fill="currentColor" opacity="1"/><polygon points="44,332 44,159.6923076923077 92.33333333333333,110.46153846153845 140.66666666666666,135.07692307692307 189,61.230769230769226 237.33333333333331,85.84615384615384 285.6666666666667,36.615384615384585 334,110.46153846153845 382.33333333333337,135.07692307692307 430.66666666666663,85.84615384615384 479,12 527.3333333333334,61.230769230769226 575.6666666666666,110.46153846153845 624,135.07692307692307 624,332" fill="currentColor" opacity="0.135"/><polyline class="pl-line" points="44,159.6923076923077 92.33333333333333,110.46153846153845 140.66666666666666,135.07692307692307 189,61.230769230769226 237.33333333333331,85.84615384615384 285.6666666666667,36.615384615384585 334,110.46153846153845 382.33333333333337,135.07692307692307 430.66666666666663,85.84615384615384 479,12 527.3333333333334,61.230769230769226 575.6666666666666,110.46153846153845 624,135.07692307692307" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.75"/><circle class="pl-dot" data-v="7" data-label="W1" data-series="Docs" cx="44" cy="159.6923076923077" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="9" data-label="W2" data-series="Docs" cx="92.33333333333333" cy="110.46153846153845" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="8" data-label="W3" data-series="Docs" cx="140.66666666666666" cy="135.07692307692307" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="11" data-label="W4" data-series="Docs" cx="189" cy="61.230769230769226" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="10" data-label="W5" data-series="Docs" cx="237.33333333333331" cy="85.84615384615384" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="12" data-label="W6" data-series="Docs" cx="285.6666666666667" cy="36.615384615384585" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="9" data-label="W7" data-series="Docs" cx="334" cy="110.46153846153845" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="8" data-label="W8" data-series="Docs" cx="382.33333333333337" cy="135.07692307692307" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="10" data-label="W9" data-series="Docs" cx="430.66666666666663" cy="85.84615384615384" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="13" data-label="W10" data-series="Docs" cx="479" cy="12" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="11" data-label="W11" data-series="Docs" cx="527.3333333333334" cy="61.230769230769226" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="9" data-label="W12" data-series="Docs" cx="575.6666666666666" cy="110.46153846153845" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="8" data-label="W13" data-series="Docs" cx="624" cy="135.07692307692307" r="3" fill="currentColor" opacity="0.75"/><polygon points="44,332 44,258.15384615384613 92.33333333333333,233.53846153846155 140.66666666666666,208.9230769230769 189,258.15384615384613 237.33333333333331,184.3076923076923 285.6666666666667,159.6923076923077 334,233.53846153846155 382.33333333333337,208.9230769230769 430.66666666666663,184.3076923076923 479,208.9230769230769 527.3333333333334,233.53846153846155 575.6666666666666,184.3076923076923 624,208.9230769230769 624,332" fill="currentColor" opacity="0.09"/><polyline class="pl-line" points="44,258.15384615384613 92.33333333333333,233.53846153846155 140.66666666666666,208.9230769230769 189,258.15384615384613 237.33333333333331,184.3076923076923 285.6666666666667,159.6923076923077 334,233.53846153846155 382.33333333333337,208.9230769230769 430.66666666666663,184.3076923076923 479,208.9230769230769 527.3333333333334,233.53846153846155 575.6666666666666,184.3076923076923 624,208.9230769230769" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.5"/><circle class="pl-dot" data-v="3" data-label="W1" data-series="Dashboards" cx="44" cy="258.15384615384613" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="4" data-label="W2" data-series="Dashboards" cx="92.33333333333333" cy="233.53846153846155" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="5" data-label="W3" data-series="Dashboards" cx="140.66666666666666" cy="208.9230769230769" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="3" data-label="W4" data-series="Dashboards" cx="189" cy="258.15384615384613" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="6" data-label="W5" data-series="Dashboards" cx="237.33333333333331" cy="184.3076923076923" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="7" data-label="W6" data-series="Dashboards" cx="285.6666666666667" cy="159.6923076923077" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="4" data-label="W7" data-series="Dashboards" cx="334" cy="233.53846153846155" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="5" data-label="W8" data-series="Dashboards" cx="382.33333333333337" cy="208.9230769230769" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="6" data-label="W9" data-series="Dashboards" cx="430.66666666666663" cy="184.3076923076923" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="5" data-label="W10" data-series="Dashboards" cx="479" cy="208.9230769230769" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="4" data-label="W11" data-series="Dashboards" cx="527.3333333333334" cy="233.53846153846155" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="6" data-label="W12" data-series="Dashboards" cx="575.6666666666666" cy="184.3076923076923" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="5" data-label="W13" data-series="Dashboards" cx="624" cy="208.9230769230769" r="3" fill="currentColor" opacity="0.5"/><text x="44" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">W1</text><text x="189" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">W4</text><text x="334" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">W7</text><text x="479" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">W10</text><text x="624" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">W13</text></svg></div>
+  <div class="v32-chart-caption">Number of documents touched per week, by format</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r3" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r3/title" data-plain-editable="true" data-plain-text-path="/blocks/r3/title" data-plain-label="组标题">distribution</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-chart" data-block-id="p3_0">
+  <h3 class="v32-chart-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p3_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p3_0/title" data-plain-label="图表标题">Share of output by format</h3>
+  <div class="v32-chart-svg" role="img" aria-label="Share of output by format"><svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg"><path class="pl-slice" data-v="74" data-label="Decks" data-series="35%" d="M320 186 L320 30 A156 156 0 0 1 447.67764463893 275.63492098203193 Z" fill="currentColor" opacity="1"/><path class="pl-slice" data-v="89" data-label="Docs" data-series="42%" d="M320 186 L447.67764463893 275.63492098203193 A156 156 0 0 1 164.71635647738435 171.067148485931 Z" fill="currentColor" opacity="0.8200000000000001"/><path class="pl-slice" data-v="50" data-label="Dashboards" data-series="23%" d="M320 186 L164.71635647738435 171.067148485931 A156 156 0 0 1 319.99999999999994 30 Z" fill="currentColor" opacity="0.64"/></svg></div>
+  <div class="v32-chart-caption">Total documents, all weeks</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r4" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r4/title" data-plain-editable="true" data-plain-text-path="/blocks/r4/title" data-plain-label="组标题">collaboration</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-chart" data-block-id="p4_0">
+  <h3 class="v32-chart-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p4_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p4_0/title" data-plain-label="图表标题">Unique contributors per format</h3>
+  <div class="v32-chart-svg" role="img" aria-label="Unique contributors per format"><svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+    <line x1="44" y1="12" x2="44" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+    <line x1="44" y1="332" x2="624" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <text x="38" y="335" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">0</text><text x="38" y="175" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">12</text><text x="38" y="15" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">23</text><rect class="pl-bar" data-v="18" data-label="Decks" data-series="Contributor count" x="-15.933333333333337" y="81.56521739130434" width="117.86666666666667" height="250.43478260869566" fill="currentColor" opacity="1" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="23" data-label="Docs" data-series="Contributor count" x="274.06666666666666" y="12" width="117.86666666666667" height="320" fill="currentColor" opacity="1" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="11" data-label="Dashboards" data-series="Contributor count" x="564.0666666666666" y="178.95652173913044" width="117.86666666666667" height="153.04347826086956" fill="currentColor" opacity="1" style="transform-box:fill-box;transform-origin:center bottom;"/><text x="44" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Decks</text><text x="334" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Docs</text><text x="624" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Dashboards</text></svg></div>
+  <div class="v32-chart-caption">How many people touched at least one document of each kind</div>
+</section>
+<section class="v32-block v32-prose" data-block-id="p4_1">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p4_1/body" data-plain-label="正文"><p>Docs attracted 23 unique contributors — nearly 30% more than decks. Dashboards remained a focused craft, handled by a smaller group.</p>
+</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r5" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r5/title" data-plain-editable="true" data-plain-text-path="/blocks/r5/title" data-plain-label="组标题">editing intensity</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-chart" data-block-id="p5_0">
+  <h3 class="v32-chart-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p5_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p5_0/title" data-plain-label="图表标题">Edits per document type</h3>
+  <div class="v32-chart-svg" role="img" aria-label="Edits per document type"><svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+    <line x1="44" y1="12" x2="44" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+    <line x1="44" y1="332" x2="624" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <text x="38" y="335" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">0</text><text x="38" y="175" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">8</text><text x="38" y="15" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">15</text><rect class="pl-bar" data-v="12" data-label="Decks" data-series="Minor" x="-15.933333333333337" y="76" width="119.86666666666667" height="256" fill="currentColor" opacity="1" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="6" data-label="Decks" data-series="Major" x="-15.933333333333337" y="-52" width="119.86666666666667" height="128" fill="currentColor" opacity="0.8200000000000001" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="3" data-label="Decks" data-series="Structural" x="-15.933333333333337" y="-116" width="119.86666666666667" height="64" fill="currentColor" opacity="0.64" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="15" data-label="Docs" data-series="Minor" x="274.06666666666666" y="12" width="119.86666666666667" height="320" fill="currentColor" opacity="1" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="9" data-label="Docs" data-series="Major" x="274.06666666666666" y="-180" width="119.86666666666667" height="192" fill="currentColor" opacity="0.8200000000000001" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="7" data-label="Docs" data-series="Structural" x="274.06666666666666" y="-329.33333333333337" width="119.86666666666667" height="149.33333333333334" fill="currentColor" opacity="0.64" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="8" data-label="Dashboards" data-series="Minor" x="564.0666666666666" y="161.33333333333334" width="119.86666666666667" height="170.66666666666666" fill="currentColor" opacity="1" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="4" data-label="Dashboards" data-series="Major" x="564.0666666666666" y="76.00000000000001" width="119.86666666666667" height="85.33333333333333" fill="currentColor" opacity="0.8200000000000001" style="transform-box:fill-box;transform-origin:center bottom;"/><rect class="pl-bar" data-v="2" data-label="Dashboards" data-series="Structural" x="564.0666666666666" y="33.33333333333335" width="119.86666666666667" height="42.666666666666664" fill="currentColor" opacity="0.64" style="transform-box:fill-box;transform-origin:center bottom;"/><text x="44" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Decks</text><text x="334" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Docs</text><text x="624" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Dashboards</text></svg></div>
+  <div class="v32-chart-caption">Average number of edit sessions per document</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r6" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r6/title" data-plain-editable="true" data-plain-text-path="/blocks/r6/title" data-plain-label="组标题">weekly rhythm</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-chart" data-block-id="p6_0">
+  <h3 class="v32-chart-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p6_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p6_0/title" data-plain-label="图表标题">Documents touched per weekday</h3>
+  <div class="v32-chart-svg" role="img" aria-label="Documents touched per weekday"><svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+    <line x1="44" y1="12" x2="44" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+    <line x1="44" y1="332" x2="624" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <text x="38" y="335" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">0</text><text x="38" y="175" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">6</text><text x="38" y="15" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">12</text><polyline class="pl-line" points="44,118.66666666666669 189,92 334,145.33333333333331 479,172 624,225.33333333333334" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="1"/><circle class="pl-dot" data-v="8" data-label="Mon" data-series="Decks" cx="44" cy="118.66666666666669" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="9" data-label="Tue" data-series="Decks" cx="189" cy="92" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="7" data-label="Wed" data-series="Decks" cx="334" cy="145.33333333333331" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="6" data-label="Thu" data-series="Decks" cx="479" cy="172" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="4" data-label="Fri" data-series="Decks" cx="624" cy="225.33333333333334" r="3" fill="currentColor" opacity="1"/><polyline class="pl-line" points="44,65.33333333333331 189,12 334,38.666666666666686 479,92 624,172" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.75"/><circle class="pl-dot" data-v="10" data-label="Mon" data-series="Docs" cx="44" cy="65.33333333333331" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="12" data-label="Tue" data-series="Docs" cx="189" cy="12" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="11" data-label="Wed" data-series="Docs" cx="334" cy="38.666666666666686" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="9" data-label="Thu" data-series="Docs" cx="479" cy="92" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="6" data-label="Fri" data-series="Docs" cx="624" cy="172" r="3" fill="currentColor" opacity="0.75"/><polyline class="pl-line" points="44,198.66666666666666 189,172 334,225.33333333333334 479,198.66666666666666 624,278.6666666666667" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.5"/><circle class="pl-dot" data-v="5" data-label="Mon" data-series="Dashboards" cx="44" cy="198.66666666666666" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="6" data-label="Tue" data-series="Dashboards" cx="189" cy="172" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="4" data-label="Wed" data-series="Dashboards" cx="334" cy="225.33333333333334" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="5" data-label="Thu" data-series="Dashboards" cx="479" cy="198.66666666666666" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="2" data-label="Fri" data-series="Dashboards" cx="624" cy="278.6666666666667" r="3" fill="currentColor" opacity="0.5"/><text x="44" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Mon</text><text x="189" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Tue</text><text x="334" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Wed</text><text x="479" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Thu</text><text x="624" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Fri</text></svg></div>
+  <div class="v32-chart-caption">Average per weekday, across the quarter</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r7" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r7/title" data-plain-editable="true" data-plain-text-path="/blocks/r7/title" data-plain-label="组标题">project focus</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-table" data-block-id="p7_0">
+  <h3 class="v32-table-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p7_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p7_0/title" data-plain-label="表格标题">Top projects by document volume</h3>
+  <div class="v32-table-scroll"><table class="v32-table-el"><thead><tr><th>Project</th><th>Decks</th><th>Docs</th><th>Dashboards</th><th>Total</th></tr></thead><tbody><tr><td>Alpha launch</td><td>22</td><td>18</td><td>15</td><td>55</td></tr><tr><td>Beta research</td><td>10</td><td>25</td><td>5</td><td>40</td></tr><tr><td>Gamma rollout</td><td>12</td><td>14</td><td>9</td><td>35</td></tr><tr><td>Delta ops</td><td>8</td><td>10</td><td>8</td><td>26</td></tr><tr><td>Epsilon concept</td><td>9</td><td>7</td><td>4</td><td>20</td></tr></tbody></table></div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r8" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r8/title" data-plain-editable="true" data-plain-text-path="/blocks/r8/title" data-plain-label="组标题">trend comparison</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-chart" data-block-id="p8_0">
+  <h3 class="v32-chart-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p8_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p8_0/title" data-plain-label="图表标题">Cumulative document growth</h3>
+  <div class="v32-chart-svg" role="img" aria-label="Cumulative document growth"><svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+    <line x1="44" y1="12" x2="44" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+    <line x1="44" y1="332" x2="624" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <text x="38" y="335" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">0</text><text x="38" y="175" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">45</text><text x="38" y="15" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">89</text><polyline class="pl-line" points="44,310.4269662921348 140.66666666666666,263.685393258427 237.33333333333331,209.75280898876406 334,163.01123595505618 430.66666666666663,116.26966292134833 527.3333333333334,87.50561797752809 624,65.93258426966293" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="1"/><circle class="pl-dot" data-v="6" data-label="Week 1" data-series="Decks" cx="44" cy="310.4269662921348" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="19" data-label="Week 3" data-series="Decks" cx="140.66666666666666" cy="263.685393258427" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="34" data-label="Week 5" data-series="Decks" cx="237.33333333333331" cy="209.75280898876406" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="47" data-label="Week 7" data-series="Decks" cx="334" cy="163.01123595505618" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="60" data-label="Week 9" data-series="Decks" cx="430.66666666666663" cy="116.26966292134833" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="68" data-label="Week 11" data-series="Decks" cx="527.3333333333334" cy="87.50561797752809" r="3" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="74" data-label="Week 13" data-series="Decks" cx="624" cy="65.93258426966293" r="3" fill="currentColor" opacity="1"/><polyline class="pl-line" points="44,303.23595505617976 140.66666666666666,238.51685393258427 237.33333333333331,170.20224719101122 334,98.29213483146066 430.66666666666663,40.76404494382024 527.3333333333334,15.595505617977551 624,12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.75"/><circle class="pl-dot" data-v="8" data-label="Week 1" data-series="Docs" cx="44" cy="303.23595505617976" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="26" data-label="Week 3" data-series="Docs" cx="140.66666666666666" cy="238.51685393258427" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="45" data-label="Week 5" data-series="Docs" cx="237.33333333333331" cy="170.20224719101122" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="65" data-label="Week 7" data-series="Docs" cx="334" cy="98.29213483146066" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="81" data-label="Week 9" data-series="Docs" cx="430.66666666666663" cy="40.76404494382024" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="88" data-label="Week 11" data-series="Docs" cx="527.3333333333334" cy="15.595505617977551" r="3" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="89" data-label="Week 13" data-series="Docs" cx="624" cy="12" r="3" fill="currentColor" opacity="0.75"/><polyline class="pl-line" points="44,317.6179775280899 140.66666666666666,288.85393258426967 237.33333333333331,252.8988764044944 334,213.34831460674155 430.66666666666663,180.98876404494382 527.3333333333334,163.01123595505618 624,152.22471910112358" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.5"/><circle class="pl-dot" data-v="4" data-label="Week 1" data-series="Dashboards" cx="44" cy="317.6179775280899" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="12" data-label="Week 3" data-series="Dashboards" cx="140.66666666666666" cy="288.85393258426967" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="22" data-label="Week 5" data-series="Dashboards" cx="237.33333333333331" cy="252.8988764044944" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="33" data-label="Week 7" data-series="Dashboards" cx="334" cy="213.34831460674155" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="42" data-label="Week 9" data-series="Dashboards" cx="430.66666666666663" cy="180.98876404494382" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="47" data-label="Week 11" data-series="Dashboards" cx="527.3333333333334" cy="163.01123595505618" r="3" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="50" data-label="Week 13" data-series="Dashboards" cx="624" cy="152.22471910112358" r="3" fill="currentColor" opacity="0.5"/><text x="44" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Week 1</text><text x="140.66666666666666" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Week 3</text><text x="237.33333333333331" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Week 5</text><text x="334" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Week 7</text><text x="430.66666666666663" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Week 9</text><text x="527.3333333333334" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Week 11</text><text x="624" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">Week 13</text></svg></div>
+  <div class="v32-chart-caption">Running total of documents created over the quarter</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r9" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r9/title" data-plain-editable="true" data-plain-text-path="/blocks/r9/title" data-plain-label="组标题">content efficiency</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-chart" data-block-id="p9_0">
+  <h3 class="v32-chart-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p9_0/title" data-plain-editable="true" data-plain-text-path="/blocks/p9_0/title" data-plain-label="图表标题">Document size vs. touch cadence</h3>
+  <div class="v32-chart-svg" role="img" aria-label="Document size vs. touch cadence"><svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+    <line x1="44" y1="12" x2="44" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+    <line x1="44" y1="332" x2="624" y2="332" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+  <text x="38" y="335" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">0</text><text x="38" y="175" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">3</text><text x="38" y="15" font-size="10" fill="currentColor" text-anchor="end" opacity="0.7">5</text><circle class="pl-dot" data-v="1.2" data-label="2" data-series="Decks" cx="44" cy="256.70588235294116" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="1.8" data-label="4" data-series="Decks" cx="92.33333333333333" cy="219.05882352941177" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="2.1" data-label="6" data-series="Decks" cx="140.66666666666666" cy="200.23529411764704" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="1.4" data-label="8" data-series="Decks" cx="189" cy="244.15686274509804" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="0.9" data-label="10" data-series="Decks" cx="237.33333333333331" cy="275.52941176470586" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="2.5" data-label="3" data-series="Decks" cx="285.6666666666667" cy="175.13725490196077" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="1.6" data-label="5" data-series="Decks" cx="334" cy="231.6078431372549" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="2.2" data-label="7" data-series="Decks" cx="382.33333333333337" cy="193.96078431372547" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="1.1" data-label="9" data-series="Decks" cx="430.66666666666663" cy="262.98039215686276" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="1" data-label="1.5" data-series="Decks" cx="479" cy="269.2549019607843" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="1.9" data-label="4.5" data-series="Decks" cx="527.3333333333334" cy="212.7843137254902" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="1.7" data-label="6.5" data-series="Decks" cx="575.6666666666666" cy="225.33333333333331" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="0.8" data-label="11" data-series="Decks" cx="624" cy="281.80392156862746" r="4" fill="currentColor" opacity="1"/><circle class="pl-dot" data-v="2" data-label="2" data-series="Docs" cx="44" cy="206.50980392156862" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="3.2" data-label="4" data-series="Docs" cx="92.33333333333333" cy="131.21568627450978" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="4.1" data-label="6" data-series="Docs" cx="140.66666666666666" cy="74.74509803921569" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="3.8" data-label="8" data-series="Docs" cx="189" cy="93.56862745098039" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="2.9" data-label="10" data-series="Docs" cx="237.33333333333331" cy="150.03921568627453" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="4.5" data-label="3" data-series="Docs" cx="285.6666666666667" cy="49.64705882352939" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="3.5" data-label="5" data-series="Docs" cx="334" cy="112.39215686274508" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="2.7" data-label="7" data-series="Docs" cx="382.33333333333337" cy="162.58823529411762" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="4.8" data-label="9" data-series="Docs" cx="430.66666666666663" cy="30.823529411764696" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="2.2" data-label="1.5" data-series="Docs" cx="479" cy="193.96078431372547" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="3" data-label="4.5" data-series="Docs" cx="527.3333333333334" cy="143.76470588235293" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="3.6" data-label="6.5" data-series="Docs" cx="575.6666666666666" cy="106.11764705882351" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="5.1" data-label="11" data-series="Docs" cx="624" cy="12" r="4" fill="currentColor" opacity="0.75"/><circle class="pl-dot" data-v="0.8" data-label="2" data-series="Dashboards" cx="44" cy="281.80392156862746" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="1.1" data-label="4" data-series="Dashboards" cx="92.33333333333333" cy="262.98039215686276" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="1.4" data-label="6" data-series="Dashboards" cx="140.66666666666666" cy="244.15686274509804" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="0.7" data-label="8" data-series="Dashboards" cx="189" cy="288.078431372549" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="0.5" data-label="10" data-series="Dashboards" cx="237.33333333333331" cy="300.62745098039215" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="1.6" data-label="3" data-series="Dashboards" cx="285.6666666666667" cy="231.6078431372549" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="1" data-label="5" data-series="Dashboards" cx="334" cy="269.2549019607843" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="1.2" data-label="7" data-series="Dashboards" cx="382.33333333333337" cy="256.70588235294116" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="0.9" data-label="9" data-series="Dashboards" cx="430.66666666666663" cy="275.52941176470586" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="0.6" data-label="1.5" data-series="Dashboards" cx="479" cy="294.3529411764706" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="1.3" data-label="4.5" data-series="Dashboards" cx="527.3333333333334" cy="250.4313725490196" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="1.5" data-label="6.5" data-series="Dashboards" cx="575.6666666666666" cy="237.88235294117646" r="4" fill="currentColor" opacity="0.5"/><circle class="pl-dot" data-v="0.4" data-label="11" data-series="Dashboards" cx="624" cy="306.9019607843137" r="4" fill="currentColor" opacity="0.5"/><text x="44" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">2</text><text x="189" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">8</text><text x="334" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">5</text><text x="479" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">1.5</text><text x="624" y="350" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.7">11</text></svg></div>
+  <div class="v32-chart-caption">Each point is a document — x = avg size (words/1k), y = edits per week</div>
+</section></div>
+</section>
+<section class="v32-block v32-group" data-block-id="r10" data-layout="row">
+  <h3 class="v32-group-title" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/r10/title" data-plain-editable="true" data-plain-text-path="/blocks/r10/title" data-plain-label="组标题">wrap-up</h3>
+  <div class="v32-group-inner" data-layout="row"><section class="v32-block v32-prose" data-block-id="p10_0">
+  <div class="v32-prose-body" data-plain-clickable="true" data-plain-kind="deck" data-plain-path="/blocks/p10_0/body" data-plain-label="正文"><p>Decks carried client-facing stories, docs housed deep work, and dashboards kept us honest. The mix feels healthy — with a few edges worth watching: dashboards deserve more contributors, and docs should shed weight in beta projects.</p>
+</div>
+</section></div>
+</section></article></main>
+
+</body>
+</html>

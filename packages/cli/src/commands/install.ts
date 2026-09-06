@@ -116,8 +116,9 @@ export function registerInstall(program: Command): void {
 
       if (chosen.length === 0) {
         process.stdout.write(
-          "未检测到 Claude Code / Cursor / VS Code 的配置。\n" +
-            "用 `plain install --all` 强制为全部工具写配置,或先装好其中一个再运行。\n",
+          "No Claude Code / Cursor / VS Code config found.\n" +
+            "Run `plain install --all` to write configs for all of them anyway,\n" +
+            "or install one of those tools first.\n",
         );
         return;
       }
@@ -129,31 +130,34 @@ export function registerInstall(program: Command): void {
       for (const t of chosen) {
         const r = applyTo(t, !!opts.dryRun);
         const mark =
-          r === "added" ? "✓ 新增" :
-          r === "updated" ? "✓ 更新" :
-          r === "unchanged" ? "· 已是最新" :
-          "✗ 失败(配置文件坏 JSON,跳过)";
+          r === "added" ? "✓ added" :
+          r === "updated" ? "✓ updated" :
+          r === "unchanged" ? "· current" :
+          "✗ failed (config file is not valid JSON — skipped)";
         if (r === "added" || r === "updated") wrote++;
         process.stdout.write(`  ${mark.padEnd(8)} ${t.label.padEnd(12)} ${t.path}\n`);
       }
       // 顺带装 Claude Code skill(教 agent 怎么用 plain 生成/编辑 artifact)
       const sk = installSkill(!!opts.dryRun);
       if (sk.ok) {
-        process.stdout.write(`  ${(opts.dryRun ? "· 待装" : "✓ skill").padEnd(8)} ${"skill".padEnd(12)} ${sk.dest}\n`);
+        process.stdout.write(`  ${(opts.dryRun ? "· pending" : "✓ skill").padEnd(8)} ${"skill".padEnd(12)} ${sk.dest}\n`);
       } else {
-        process.stdout.write(`  · 跳过 skill (${sk.reason})\n`);
+        process.stdout.write(`  · skipped skill (${sk.reason})\n`);
       }
 
       if (opts.dryRun) {
-        process.stdout.write("\n(dry-run · 未写入。去掉 --dry-run 实际安装。)\n");
+        process.stdout.write("\n(dry-run — nothing written. Drop --dry-run to install.)\n");
       } else if (wrote > 0 || sk.ok) {
         process.stdout.write(
-          `\n完成 · 重启对应 AI 工具后,Plain 的 generate/edit/export 工具即可用。\n` +
-            `Claude Code 会读到 plain skill,自动懂如何生成/编辑 artifact。\n` +
-            `(需要登录:运行 \`plain login\`)\n`,
+          "\nDone. Restart the tool and Plain's generate / edit / export tools are available.\n" +
+            "Claude Code also picks up the plain skill.\n\n" +
+            "Next, give it a model. Either your own key:\n" +
+            "  export ANTHROPIC_API_KEY=sk-...      # or OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, ...\n" +
+            "  export OLLAMA_BASE_URL=http://localhost:11434   # fully local\n" +
+            "or a hosted account: `plain login`\n",
         );
       } else {
-        process.stdout.write("\n无改动 · 全部已是最新。\n");
+        process.stdout.write("\nNothing to do — everything is already current.\n");
       }
     });
 }

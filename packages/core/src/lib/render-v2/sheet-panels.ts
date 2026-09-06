@@ -925,7 +925,7 @@ function renderEchartsPanel(
   d: SectionData,
 ): string {
   const csv = str(d.data);
-  if (!csv) return `<div class="chart-error">缺少 data 字段</div>`;
+  if (!csv) return `<div class="chart-error">Missing the data field</div>`;
   const opts: ChartOpts = {
     variant,
     csv,
@@ -948,7 +948,7 @@ function renderEchartsPanel(
 /** mixed-chart:bar + line 自由组合(双 Y 轴) */
 function renderMixedChartPanel(d: SectionData): string {
   const csv = str(d.data);
-  if (!csv) return `<div class="chart-error">缺少 data 字段</div>`;
+  if (!csv) return `<div class="chart-error">Missing the data field</div>`;
   const series = (d.series ?? {}) as Record<string, "bar" | "line" | "area">;
   const opts: ChartOpts = {
     variant: "line", // 不重要;seriesTypes 接管每 series
@@ -973,7 +973,7 @@ function renderMixedChartPanel(d: SectionData): string {
  */
 function renderLifecyclePanel(d: SectionData): string {
   const csv = str(d.data);
-  if (!csv) return `<div class="chart-error">缺少 data 字段</div>`;
+  if (!csv) return `<div class="chart-error">Missing the data field</div>`;
   // 语义色:增长态正向(绿/蓝/紫),流失态负向(灰/红)
   const LIFECYCLE_COLORS: Record<string, string> = {
     new: "#2ea043",

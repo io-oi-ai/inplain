@@ -123,7 +123,7 @@ export function rewriteAssetMarkers(md: string): string {
 
   // V27-U · 同样兜底 <img src="asset:xxx"> · 这是 AI 生成 raw HTML 时编的
   const htmlAssetRe = /<img[^>]*\s+src=["'](asset|icon|logo):[^"']*["'][^>]*>/gi;
-  md = md.replace(htmlAssetRe, (_match) => `<span class="plain-asset-missing">[图片占位]</span>`);
+  md = md.replace(htmlAssetRe, (_match) => `<span class="plain-asset-missing">[image placeholder]</span>`);
 
   return md;
 }
