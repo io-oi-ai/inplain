@@ -17,6 +17,11 @@ Then, from inside your agent:
 
 > "Read src/payments and build me an 8-page deck on what shipped this sprint."
 
+**See what comes out:** [deck](https://io-oi-ai.github.io/inplain/examples/deck.html) ·
+[doc](https://io-oi-ai.github.io/inplain/examples/doc.html) ·
+[sheet](https://io-oi-ai.github.io/inplain/examples/sheet.html) — each is the
+literal output of one `plain generate` call, published without hand-tuning.
+
 ## Why an agent needs this
 
 Agents are good at deciding *what* a document should say. They're bad at

@@ -87,6 +87,13 @@ editor) can use a different model.
 - The document model changed shape twice (v1 → v31 → v32). Some code paths
   still carry v1 compatibility.
 
+**Output you can look at before installing anything** — each is one
+`plain generate` call, published as it came out:
+
+- deck: https://io-oi-ai.github.io/inplain/examples/deck.html
+- doc: https://io-oi-ai.github.io/inplain/examples/doc.html
+- sheet: https://io-oi-ai.github.io/inplain/examples/sheet.html
+
 **Try it:**
 
     npm install -g @inplain/cli
@@ -157,9 +164,9 @@ Semble 发了三次（7 分 → 8 分 → 445 分）。首发不理想不是终�
 
 ## 发帖前最后检查
 
-- [ ] 三个真实产物链接（deck / doc / sheet）可访问，且**不是手工调过的**
-- [ ] `npm install -g @inplain/cli` 在干净机器上能装（当前 npm 上还是旧版本，
-      发帖前需要 `npm publish` 新版）
-- [ ] MCP 配置块复制粘贴可用
-- [ ] README 首屏就是差异化，不是功能列表
-- [ ] 清空当天日程
+- [x] 三个真实产物链接可访问，且不是手工调过的
+      → io-oi-ai.github.io/inplain/examples/
+- [x] `npm install -g @inplain/cli` 能装 —— 0.6.0 已发布，干净环境实测通过
+- [x] `plain install` 写出的 MCP 配置正确（隔离 HOME 实测，三个工具都写对）
+- [x] README 首屏是差异化 + 可点的产物链接
+- [ ] 清空发帖当天日程（唯一还差的）
