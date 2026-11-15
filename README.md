@@ -123,6 +123,18 @@ pnpm cli:smoke             # 11 checks — including a live MCP server over JSON
 
 Neither smoke suite calls an LLM or touches the network, so they run anywhere.
 
+## Already have an HTML file?
+
+If you're not generating anything — you already have a finished `.html` and just
+want a link to send someone — that's a different (and much shorter) path:
+drop it at **[inplain.app/html-to-url](https://inplain.app/html-to-url?utm_source=github&utm_medium=readme&utm_campaign=html_to_url)**
+and you get an `https` URL. No account, no build step.
+
+中文说明：[把本地 HTML 文件转成链接](https://io-oi-ai.github.io/inplain/html-to-url.html)
+
+Note this is a hosted-only path today — `plain push` takes Markdown source, not
+raw HTML.
+
 ## Hosted version
 
 [inplain.app](https://inplain.app) runs a hosted workspace on top of this — a

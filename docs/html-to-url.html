@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML 转链接：把本地 HTML 文件变成可分享的网址 — Plain 开源项目</title>
+<meta name="description" content="把本地 .html 文件变成一条 https 链接，不用服务器、不用部署、不用备案。Plain 是开源的（MIT），既能用托管版直接拖拽，也能接进 AI agent 自动生成并发布。">
+
+<!--
+  canonical 指向主站的对应页面。
+
+  这一页和 inplain.app/zh/html-to-url 讲的是同一件事的两个侧面：
+  那边是「拖进去就能用」的工具页，这边是「开源项目怎么本地跑 / 怎么批量发」。
+  内容不重叠，但搜索引擎可能判近重复 —— 明确让权重归到主站工具页，
+  因为那一页才是真正在转化的落地页（Bing 实测 CTR 23%）。
+-->
+<link rel="canonical" href="https://inplain.app/zh/html-to-url">
+<meta name="robots" content="index, follow">
+
+<style>
+  :root { --ink:#1a1a1a; --mute:#666; --rule:#e5e5e5; --accent:#c0392b; --bg:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#e8e8e8; --mute:#999; --rule:#2a2a2a; --accent:#e74c3c; --bg:#141414; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font:15px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  main { max-width:720px; margin:0 auto; padding:56px 24px 80px; }
+  h1 { font-size:26px; line-height:1.4; margin:0 0 12px; font-weight:600; }
+  h2 { font-size:18px; margin:40px 0 12px; font-weight:600; }
+  h3 { font-size:15px; margin:24px 0 8px; font-weight:600; }
+  .lede { color:var(--mute); font-size:16px; margin:0 0 8px; }
+  a { color:var(--ink); text-decoration:underline; text-decoration-color:var(--rule); text-underline-offset:3px; }
+  a:hover { text-decoration-color:var(--accent); }
+  .cta {
+    display:inline-block; margin:24px 0; padding:11px 20px; background:var(--accent);
+    color:#fff; border-radius:6px; text-decoration:none; font-weight:500;
+  }
+  .cta:hover { opacity:.88; text-decoration:none; }
+  pre {
+    background:rgba(127,127,127,.09); padding:14px 16px; border-radius:6px;
+    overflow-x:auto; font-size:13px; line-height:1.6;
+  }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  table { border-collapse:collapse; width:100%; margin:16px 0; font-size:14px; display:block; overflow-x:auto; }
+  th,td { border-bottom:1px solid var(--rule); padding:9px 10px; text-align:left; vertical-align:top; }
+  th { font-weight:600; }
+  dt { font-weight:600; margin-top:18px; }
+  dd { margin:5px 0 0; color:var(--mute); }
+  footer { margin-top:56px; padding-top:20px; border-top:1px solid var(--rule); color:var(--mute); font-size:13px; }
+</style>
+
+<!--
+  FAQPage 结构化数据 —— AI 引擎（Bing Copilot / ChatGPT 搜索）偏好拿它做直接引用源。
+  每条答案第一句即结论，因为引用时通常只取前一两句。
+-->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "HTML 文件怎么转成链接？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "把 .html 文件拖进 inplain.app/zh/html-to-url 即可拿到一条 https 链接，不需要注册、不需要服务器、不需要备案。Plain 是 MIT 开源的，也可以自己部署。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "HTML 转链接需要买服务器或域名吗？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不需要。链接托管在 inplain.app 上，直接可以用微信、QQ 或钉钉发给别人打开。只有在你想用自己的域名时才需要额外配置。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "转出来的链接能保存多久？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "匿名发布的链接保留 7 天，登录后发布的链接长期保留。Plain 本身是 MIT 开源的，也可以自己部署做永久托管。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "带 JavaScript 的互动网页能转链接吗？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "可以。单文件 HTML 里的 JavaScript、CSS 和动画都会原样保留，所以互动课件、知识闯关、配对卡牌这类可点击的页面都能正常工作。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "能批量把很多 HTML 转成链接吗？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "目前需要逐个拖拽上传。Plain 的命令行工具可以批量发布 Markdown 源文件，但还不支持直接上传已经做好的 HTML 文件。"
+      }
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Plain — HTML 转链接",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web, macOS, Windows, Linux",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
+  "license": "https://opensource.org/licenses/MIT",
+  "url": "https://inplain.app/zh/html-to-url",
+  "codeRepository": "https://github.com/io-oi-ai/inplain"
+}
+</script>
+</head>
+
+<body>
+<main>
+
+<h1>HTML 转链接：把本地 HTML 文件变成可分享的网址</h1>
+
+<p class="lede">
+不用服务器、不用部署、不用备案。拖一个 <code>.html</code> 文件进去，拿一条
+<code>https</code> 链接，发给谁都能打开。
+</p>
+
+<p>
+Plain 是 <a href="https://github.com/io-oi-ai/inplain">MIT 开源项目</a>。
+这一页讲的是<strong>怎么自己跑</strong>（本地部署、接进 AI agent）；
+如果你只想拖一个文件拿条链接，直接用托管版更快：
+</p>
+
+<a class="cta" href="https://inplain.app/zh/html-to-url?utm_source=github&utm_medium=pages&utm_campaign=html_to_url_zh">打开在线版 →</a>
+
+<h2>这个需求的几种说法</h2>
+
+<p>
+同一件事有很多种叫法 —— HTML 转链接、HTML 转 URL、HTML 转网址、HTML 文件转链接、
+HTML 转在线链接、HTML 网页转链接、本地 HTML 转在线网页。
+说的都是同一个动作：<strong>手上有一个做好的 HTML 文件，想让别人点开就能看。</strong>
+</p>
+
+<p>
+传统做法要么买服务器传上去，要么用 GitHub Pages / Vercel 配一遍仓库和构建，
+要么发文件让对方下载（微信里发 <code>.html</code> 对方多半打不开）。
+这三条路对「我就想发个课件给学生」来说都太重了。
+</p>
+
+<h2>方式一：在线拖拽（最快）</h2>
+
+<p>
+打开 <a href="https://inplain.app/zh/html-to-url?utm_source=github&utm_medium=pages&utm_campaign=html_to_url_zh">inplain.app/zh/html-to-url</a>，
+把文件拖进去，链接立刻就有了。不登录也能用，匿名链接保留 7 天；登录后长期保留。
+</p>
+
+<h2>方式二：让 AI agent 生成并发布</h2>
+
+<p>
+Plain 同时是一个 <a href="https://modelcontextprotocol.io">MCP</a> 服务器。
+接进 Claude Code、Cursor 或其他支持 MCP 的 agent 后，
+agent 可以直接生成 deck / doc / sheet 并<strong>发布成链接交回来</strong>：
+</p>
+
+<pre><code>npm install -g @inplain/cli
+plain install    # 自动写入 Claude Code / Cursor / VS Code 的配置</code></pre>
+
+<p>
+然后在 agent 里直接说「读一下这个目录，做一份八页的汇报 deck」，
+它会把成品和链接一起给你。
+</p>
+
+<p>
+⚠️ 这条路是让 <strong>agent 从头生成</strong>内容。
+如果你手上<strong>已经有一个做好的 <code>.html</code> 文件</strong>，
+目前只能用上面的在线拖拽 —— 命令行的 <code>plain push</code> 只接受 Markdown 源文件，
+还不支持直接上传 HTML。
+</p>
+
+<h2>各种做法的对比</h2>
+
+<table>
+  <thead>
+    <tr><th>做法</th><th>要准备什么</th><th>适合</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>在线拖拽</td>
+      <td>什么都不用</td>
+      <td>偶尔发一两个</td>
+    </tr>
+    <tr>
+      <td>MCP 接进 agent</td>
+      <td>一条 <code>plain install</code></td>
+      <td>让 AI 生成并直接发布</td>
+    </tr>
+    <tr>
+      <td>GitHub Pages</td>
+      <td>仓库 + 分支 + 等构建</td>
+      <td>长期维护的站点</td>
+    </tr>
+    <tr>
+      <td>自己买服务器</td>
+      <td>服务器 + 域名 + 备案</td>
+      <td>完全自控</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>常见问题</h2>
+
+<dl>
+  <dt>带 JavaScript 的互动网页能转吗？</dt>
+  <dd>
+    能。单文件里的 JS、CSS、动画都原样保留，所以互动课件、知识闯关、配对卡牌、
+    物理仿真这类可点击的页面都能正常跑。
+  </dd>
+
+  <dt>要买服务器或域名吗？</dt>
+  <dd>不用。链接直接托管，微信、QQ、钉钉里都能打开。</dd>
+
+  <dt>链接能存多久？</dt>
+  <dd>匿名 7 天，登录后长期保留。也可以自己部署做永久托管 —— 代码是 MIT 的。</dd>
+
+  <dt>图片和字体要单独传吗？</dt>
+  <dd>
+    内联的（base64、CDN 链接、Web Font）不用管。
+    但如果 HTML 里引用的是 <code>./img/x.png</code> 这种<strong>本地相对路径</strong>，
+    那些文件不会跟着一起上传，发布后会显示不出来 —— 先把它们内联进单文件。
+  </dd>
+
+  <dt>文件来自 AI 生成的，要注意什么？</dt>
+  <dd>
+    发布前先在本地打开看一遍：检查有没有写死的密钥、有没有引用本地路径、
+    内容事实对不对。发布后用无痕窗口再验证一次链接。
+  </dd>
+</dl>
+
+<h2>自己跑</h2>
+
+<pre><code>git clone https://github.com/io-oi-ai/inplain
+cd inplain
+pnpm install
+pnpm plain --help</code></pre>
+
+<p>
+渲染管线在 <code>packages/core</code>，是纯函数 —— 不碰网络、不依赖框架，
+可以单独当库用。
+</p>
+
+<footer>
+  <a href="https://github.com/io-oi-ai/inplain">GitHub 仓库</a> ·
+  <a href="https://inplain.app/zh/html-to-url?utm_source=github&utm_medium=pages&utm_campaign=html_to_url_zh">在线版</a> ·
+  <a href="https://inplain.app">inplain.app</a> ·
+  MIT License
+</footer>
+
+</main>
+</body>
+</html>
