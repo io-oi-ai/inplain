@@ -71,6 +71,18 @@ const TOOL_DESCRIPTIONS = {
   export_sheet_xlsx:
     "Legacy Office fallback: export a Plain sheet source to a .xlsx file. " +
     "Prefer `export` (web-native HTML). Input: sheet source. Returns base64 binary.",
+  /**
+   * publish_html —— 和 generate_artifact 的关键区别要写进描述里,
+   * 否则 agent 会拿已有的 HTML 去调 generate_artifact,结果内容被重新生成一遍。
+   */
+  publish_html:
+    "Publish an EXISTING local .html file as a shareable link. " +
+    "The file is hosted exactly as-is — not parsed, not re-generated, not restyled. " +
+    "Use this when the HTML already exists (you wrote it to disk, or the user points at a file) " +
+    "and all that's needed is a URL to share. " +
+    "Do NOT use generate_artifact for that — it would regenerate the content from scratch. " +
+    "Interactive pages work: inline JavaScript and CSS keep running in the published page. " +
+    "Without credentials the link expires in 7 days; run `plain login` for permanent links.",
 };
 
 function ok(text: string) {
@@ -387,6 +399,54 @@ function buildServer(): McpServer {
       const { sheetDocToXlsx, sourceToSheet } = await import("@/core");
       const buf = sheetDocToXlsx(sourceToSheet(source));
       return okBinary(Buffer.from(buf).toString("base64"), "sheet.xlsx");
+    }),
+  );
+
+  /**
+   * publish_html —— 把**磁盘上已有的** HTML 原样发布成链接。
+   *
+   * 补的是一个实测缺口:agent 经常先把 HTML 写到文件,再需要一条链接交给人看。
+   * 此前 MCP 这边只有「从 intent 重新生成」的路径,agent 拿着现成文件无工具可用。
+   *
+   * 刻意收 `file` 路径而不是 `html` 字符串:agent 写完文件后再把整份内容读回来
+   * 塞进工具参数,会白烧一大截 context(2MB 的页面尤其明显)。
+   */
+  server.registerTool(
+    "publish_html",
+    {
+      description: TOOL_DESCRIPTIONS.publish_html,
+      inputSchema: {
+        file: z.string().describe("Absolute or relative path to a local .html file"),
+        title: z
+          .string()
+          .optional()
+          .describe("Override the page title (default: taken from <title>, else the filename)"),
+      },
+    },
+    wrap(async ({ file, title }: { file: string; title?: string }) => {
+      const { publishHtmlFile, findLocalRefs } = await import("../publish-html");
+      const r = await publishHtmlFile({ file, title });
+
+      // 本地相对路径资源不会被上传 —— 把这件事明确告诉 agent,
+      // 否则它会把裂图当成发布失败,然后开始瞎重试。
+      let note = "";
+      try {
+        const { readFileSync } = await import("node:fs");
+        const refs = findLocalRefs(readFileSync(file, "utf8"));
+        if (refs.length) {
+          note =
+            `\n\nNote: this file references ${refs.length} local path(s) that were NOT uploaded ` +
+            `(${refs.slice(0, 3).join(", ")}${refs.length > 3 ? ", …" : ""}). ` +
+            `They will appear broken. Inline them into the single file if they matter.`;
+        }
+      } catch {
+        // 预检失败不影响已经成功的发布
+      }
+
+      const ttl = r.anonymous
+        ? `\n\nPublished anonymously — expires in ${r.ttlDays} days. Run \`plain login\` for permanent links.`
+        : "";
+      return ok(`${r.url}${ttl}${note}`);
     }),
   );
 

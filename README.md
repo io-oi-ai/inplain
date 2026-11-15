@@ -132,8 +132,18 @@ and you get an `https` URL. No account, no build step.
 
 中文说明：[把本地 HTML 文件转成链接](https://io-oi-ai.github.io/inplain/html-to-url.html)
 
-Note this is a hosted-only path today — `plain push` takes Markdown source, not
-raw HTML.
+From the CLI, same thing in one command:
+
+```bash
+plain publish ./report.html          # → https://inplain.app/s/...
+plain publish ./decks/*.html         # batch
+plain --json publish ./*.html | jq -r .url
+```
+
+Agents can do it too — the MCP server exposes `publish_html` for files that
+already exist on disk (as opposed to `generate_artifact`, which writes new ones).
+
+Without credentials links expire in 7 days; `plain login` makes them permanent.
 
 ## Hosted version
 

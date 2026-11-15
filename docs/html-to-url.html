@@ -98,7 +98,7 @@
       "name": "能批量把很多 HTML 转成链接吗？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "目前需要逐个拖拽上传。Plain 的命令行工具可以批量发布 Markdown 源文件，但还不支持直接上传已经做好的 HTML 文件。"
+        "text": "可以。用命令行 plain publish ./目录/*.html 即可批量发布，每个文件返回一条链接；也可以加 --json 配合 jq 把链接存成清单。"
       }
     }
   ]
@@ -175,11 +175,27 @@ plain install    # 自动写入 Claude Code / Cursor / VS Code 的配置</code><
 它会把成品和链接一起给你。
 </p>
 
+<h2>方式三：命令行批量发布</h2>
+
+<p>一次要发几十个文件时，用 <code>plain publish</code> 更合适：</p>
+
+<pre><code>npm install -g @inplain/cli
+plain login                      # 登录后链接长期保留
+
+plain publish ./课件.html         # 单个
+plain publish ./课件/*.html       # 批量
+
+# 把链接存成清单
+plain --json publish ./课件/*.html | jq -r .url &gt; links.txt</code></pre>
+
 <p>
-⚠️ 这条路是让 <strong>agent 从头生成</strong>内容。
-如果你手上<strong>已经有一个做好的 <code>.html</code> 文件</strong>，
-目前只能用上面的在线拖拽 —— 命令行的 <code>plain push</code> 只接受 Markdown 源文件，
-还不支持直接上传 HTML。
+批量时单个文件失败不会中断整批，最后统一汇报。
+如果 HTML 里引用了本地相对路径的图片，发布前会提示你（那些文件不会被上传）。
+</p>
+
+<p>
+Agent 也能用：MCP 工具 <code>publish_html</code> 专门发布<strong>磁盘上已有的</strong>
+HTML 文件，不会像 <code>generate_artifact</code> 那样重新生成内容。
 </p>
 
 <h2>各种做法的对比</h2>
@@ -198,6 +214,11 @@ plain install    # 自动写入 Claude Code / Cursor / VS Code 的配置</code><
       <td>MCP 接进 agent</td>
       <td>一条 <code>plain install</code></td>
       <td>让 AI 生成并直接发布</td>
+    </tr>
+    <tr>
+      <td><code>plain publish</code></td>
+      <td>装一个 npm 包</td>
+      <td>批量、可脚本化</td>
     </tr>
     <tr>
       <td>GitHub Pages</td>
