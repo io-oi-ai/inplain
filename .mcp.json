@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "plain": {
+      "command": "plain",
+      "args": ["mcp"]
+    }
+  }
+}

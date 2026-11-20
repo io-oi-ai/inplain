@@ -53,6 +53,20 @@ plain install          # writes config for Claude Code / Cursor / VS Code
 plain mcp              # or run it in the foreground to debug
 ```
 
+**Manual MCP config** — the same entry `plain install` writes. Add it to
+`~/.cursor/mcp.json` or `~/.claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "plain": {
+      "command": "plain",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
 Tools: `generate_artifact`, `edit_artifact`, `export`, plus per-form variants
 and Office exporters (see the caveat below). `generate_artifact` publishes the
 result and returns a shareable URL alongside the source.
